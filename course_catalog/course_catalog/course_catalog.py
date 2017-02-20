@@ -7,7 +7,4 @@ app.config.from_object('course_catalog.default_settings')
 app.config.from_pyfile('config.py', silent=True)
 # app.run(host='0.0.0.0', port=5000)
 
-
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
+import views
