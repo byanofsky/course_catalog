@@ -2,3 +2,4 @@
 *.db
 .vagrant
 venv
+*.egg-info
