@@ -8,6 +8,11 @@ def view_all_courses():
     return 'Show all courses'
 
 
+@app.route('/register/', methods=['GET', 'POST'])
+def register():
+    return render_template('register.html')
+
+
 @app.route('/course/add/', methods=['GET', 'POST'])
 def add_course():
     return render_template('add_course.html')
