@@ -52,7 +52,6 @@
   }(document, 'script', 'facebook-jssdk'));
 
   function sendTokenToServer(accessToken) {
-    console.log(accessToken)
     console.log('Welcome!  Fetching your information.... ');
     FB.api('/me', function(response) {
       console.log('Successful login for: ' + response.name);

@@ -1,4 +1,8 @@
-from flask import render_template
+import random, string
+
+from flask import render_template, session, request, make_response
+import requests
+
 from course_catalog import app
 
 
@@ -6,6 +10,71 @@ from course_catalog import app
 @app.route('/courses/')
 def view_all_courses():
     return 'Show all courses'
+
+
+@app.route('/login/')
+def login():
+    # Creates and stores an anti-forgery token
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    session['state'] = state
+    return render_template('login.html', STATE=state)
+
+
+@app.route('/fbconnect', methods=['POST'])
+def fbconnect():
+    # TODO: this needs testing if user can't log in
+    # if 1 == 1:
+    if request.args.get('state') != session['state']:
+        response = make_response(json.dumps('Invalid state parameter'))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    short_lived_token = request.data
+
+    # Exchange client token for server-side token
+    url = 'https://graph.facebook.com/oauth/access_token'
+    payload = {
+        'grant_type': 'fb_exchange_token',
+        'client_id': app.config['FB_APP_ID'],
+        'client_secret': app.config['FB_APP_SECRET'],
+        'fb_exchange_token': short_lived_token
+    }
+    r = requests.get(url, params=payload)
+    token = r.text.split("&")[0]
+
+    # Get user info from api
+    url = 'https://graph.facebook.com/v2.8/me?%s&fields=name,id,email' % token
+    r = requests.get(url)
+    data = r.json()
+
+    # Store user info in session
+    session['provider'] = 'facebook'
+    session['email'] = data['email']
+    session['facebook_id'] = data['id']
+    session['name'] = data['name']
+    session['token'] = token
+
+    print "User logged in as %s" % session['name']
+    return "You are now logged in as %s" % session['name']
+
+
+@app.route('/fbdisconnect/')
+def fbdisconnect():
+    # Check if user is logged in with facebook
+    if session.get('provider') == 'facebook':
+        token = session['token']
+        facebook_id = session['facebook_id']
+
+        url = 'https://graph.facebook.com/v2.8/%s/permissions?%s' \
+              % (facebook_id, token)
+        r = requests.delete(url)
+        print r
+    return 'Disconnected'
+
+
+@app.route('/logout/')
+def logout():
+    pass
 
 
 @app.route('/register/', methods=['GET', 'POST'])
