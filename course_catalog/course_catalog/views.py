@@ -1,3 +1,4 @@
+from flask import render_template
 from course_catalog import app
 
 
@@ -7,9 +8,9 @@ def view_all_courses():
     return 'Show all courses'
 
 
-@app.route('/course/add/')
+@app.route('/course/add/', methods=['GET', 'POST'])
 def add_course():
-    return 'Add a new course'
+    return render_template('add_course.html')
 
 
 @app.route('/course/<int:course_id>/')

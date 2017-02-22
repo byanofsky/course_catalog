@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Add Course{% endblock %}
+{% block body %}
+<h1>Add Course</h1>
+<form method="post">
+  <label>
+    Course Name
+    <input type="text" name="name" value="">
+  </label>
+
+  <label>
+    Course URL
+    <input type="text" name="url" value="">
+  </label>
+
+  <label>
+    Category
+    <input type="text" name="name" value="">
+  </label>
+
+  <input type="submit" value="Submit">
+</form>
+{% endblock %}
