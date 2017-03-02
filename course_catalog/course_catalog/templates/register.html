@@ -5,12 +5,12 @@
 <form method="post">
   <label>
     Email
-    <input type="text" name="email" value="">
+    <input type="text" name="email" value="{{ params.email }}">
   </label>
 
   <label>
     Name
-    <input type="text" name="name" value="">
+    <input type="text" name="name" value="{{ params.name }}">
   </label>
 
   <label>
@@ -20,7 +20,7 @@
 
   <label>
     Verify Password
-    <input type="password" name="verify-password" value="">
+    <input type="password" name="verify_password" value="">
   </label>
 
   <input type="submit" value="Submit">
