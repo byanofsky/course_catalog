@@ -89,6 +89,11 @@ class School(Base):
     def get_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
+
+    @classmethod
+    def get_all(cls):
+        return cls.query.all()
+
     @classmethod
     def create(cls, name, url, user_id):
         school = cls(name, url, user_id)

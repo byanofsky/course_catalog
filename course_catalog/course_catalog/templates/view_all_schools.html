@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Schools{% endblock %}
+{% block body %}
+<h1>Schools</h1>
+
+{% if schools %}
+<ul>
+  {% for school in schools %}
+  <li>
+    {{ school.name }}
+    {{ school.url }}
+    {{ school.id }}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>
+  No Schools
+</p>
+{% endif %}
+
+{% endblock %}

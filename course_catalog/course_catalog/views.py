@@ -160,7 +160,8 @@ def delete_course(course_id):
 
 @app.route('/schools/')
 def view_all_schools():
-    return 'Show all schools'
+    schools = School.get_all()
+    return render_template('view_all_schools.html', schools=schools)
 
 
 @app.route('/school/add/', methods=['GET', 'POST'])
