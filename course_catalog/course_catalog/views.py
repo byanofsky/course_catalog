@@ -1,6 +1,6 @@
 import random, string
 
-from flask import render_template, session, request, make_response
+from flask import render_template, session, request, make_response, flash, redirect, url_for
 from flask_bcrypt import Bcrypt
 import requests
 
@@ -86,24 +86,25 @@ def logout():
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     errors = None
-    params = None
+    fields = None
     if request.method == 'POST':
-        params = {
+        fields = {
             'email': request.form['email'],
             'name': request.form['name'],
             'password': request.form['password'],
             'verify_password': request.form['verify_password']
         }
-        errors = check_registration(params)
+        errors = check_registration(fields, User.get_by_email(fields['email']))
         if not errors:
             User.create(
-                name=params['name'],
-                email=params['email'],
-                pwhash=bcrypt.generate_password_hash(params['password'], 10)
+                name=fields['name'],
+                email=fields['email'],
+                pwhash=bcrypt.generate_password_hash(fields['password'], 10)
             )
-        print bcrypt.generate_password_hash(params['password'], 10)
+            flash('You were successfully logged in')
+            return redirect(url_for('view_all_courses'))
 
-    return render_template('register.html', params=params, errors=errors)
+    return render_template('register.html', fields=fields, errors=errors)
 
 
 @app.route('/course/add/', methods=['GET', 'POST'])

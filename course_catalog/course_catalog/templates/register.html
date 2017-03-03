@@ -5,22 +5,47 @@
 <form method="post">
   <label>
     Email
-    <input type="text" name="email" value="{{ params.email }}">
+    <input type="text" name="email" value="{{ fields.email }}">
+    {% if errors and errors.email %}
+      <div class="error">
+        Please enter a valid email address.
+      </div>
+    {% endif %}
+    {% if errors and errors.user_exists %}
+      <div class="error">
+        A user already exists with this email address.
+      </div>
+    {% endif %}
   </label>
 
   <label>
     Name
-    <input type="text" name="name" value="{{ params.name }}">
+    <input type="text" name="name" value="{{ fields.name }}">
+    {% if errors and errors.name %}
+      <div class="error">
+        Please enter a valid name.
+      </div>
+    {% endif %}
   </label>
 
   <label>
     Password
     <input type="password" name="password" value="">
+    {% if errors and errors.password %}
+      <div class="error">
+        Please enter a valid password, at least 3 characters long.
+      </div>
+    {% endif %}
   </label>
 
   <label>
     Verify Password
     <input type="password" name="verify_password" value="">
+    {% if errors and errors.verify_password %}
+      <div class="error">
+        Please re-enter your password correctly.
+      </div>
+    {% endif %}
   </label>
 
   <input type="submit" value="Submit">
