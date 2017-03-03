@@ -6,7 +6,7 @@ import requests
 
 from course_catalog import app
 from models import User
-from modules.form_validation import check_registration
+from modules.form_validation import check_registration, check_login
 
 
 bcrypt = Bcrypt(app)
@@ -18,13 +18,54 @@ def view_all_courses():
     return 'Show all courses'
 
 
-@app.route('/login/')
+@app.route('/register/', methods=['GET', 'POST'])
+def register():
+    errors = None
+    fields = None
+    if request.method == 'POST':
+        fields = {
+            'email': request.form['email'],
+            'name': request.form['name'],
+            'password': request.form['password'],
+            'verify_password': request.form['verify_password']
+        }
+        errors = check_registration(fields, User.get_by_email(fields['email']))
+        if not errors:
+            User.create(
+                name=fields['name'],
+                email=fields['email'],
+                pwhash=bcrypt.generate_password_hash(fields['password'], 10)
+            )
+            flash('You were successfully registered')
+            return redirect(url_for('view_all_courses'))
+
+    return render_template('register.html', fields=fields, errors=errors)
+
+
+@app.route('/login/', methods=['GET', 'POST'])
 def login():
+    errors = None
+    fields = None
+    if request.method == 'POST':
+        fields = {
+            'email': request.form['email'],
+            'password': request.form['password']
+        }
+        errors = check_login(fields=fields)
+        if not errors:
+            user = User.get_by_email(fields['email'])
+            if not user:
+                errors['user_exists'] = True
+            elif not bcrypt.check_password_hash(user.pwhash, fields['password']):
+                errors['password'] = True
+            else:
+                flash('You were successfully logged in')
+                return redirect(url_for('view_all_courses'))
     # Creates and stores an anti-forgery token
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     session['state'] = state
-    return render_template('login.html', STATE=state)
+    return render_template('login.html', STATE=state, fields=fields, errors=errors)
 
 
 @app.route('/fbconnect', methods=['POST'])
@@ -81,30 +122,6 @@ def fbdisconnect():
 @app.route('/logout/')
 def logout():
     pass
-
-
-@app.route('/register/', methods=['GET', 'POST'])
-def register():
-    errors = None
-    fields = None
-    if request.method == 'POST':
-        fields = {
-            'email': request.form['email'],
-            'name': request.form['name'],
-            'password': request.form['password'],
-            'verify_password': request.form['verify_password']
-        }
-        errors = check_registration(fields, User.get_by_email(fields['email']))
-        if not errors:
-            User.create(
-                name=fields['name'],
-                email=fields['email'],
-                pwhash=bcrypt.generate_password_hash(fields['password'], 10)
-            )
-            flash('You were successfully logged in')
-            return redirect(url_for('view_all_courses'))
-
-    return render_template('register.html', fields=fields, errors=errors)
 
 
 @app.route('/course/add/', methods=['GET', 'POST'])

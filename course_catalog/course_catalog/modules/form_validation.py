@@ -22,5 +22,12 @@ def check_registration(fields, user_exists):
         errors['password'] = True
     if fields['password'] != fields['verify_password']:
         errors['verify_password'] = True
+    return errors
 
+def check_login(fields):
+    errors = {}
+    if not valid_email(fields['email']):
+        errors['email'] = True
+    if not fields['password']:
+        errors['password'] = True
     return errors
