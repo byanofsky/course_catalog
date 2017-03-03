@@ -1,15 +1,26 @@
 import random, string
+from functools import wraps
 
 from flask import render_template, session, request, make_response, flash, redirect, url_for
 from flask_bcrypt import Bcrypt
 import requests
 
 from course_catalog import app
-from models import User
-from modules.form_validation import check_registration, check_login
+from models import User, School
+from modules.form_validation import check_registration, check_login, check_add_school
 
 
 bcrypt = Bcrypt(app)
+
+
+# Function decorator for handling login requirements
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get('user_id') is None:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @app.route('/')
@@ -31,11 +42,12 @@ def register():
         }
         errors = check_registration(fields, User.get_by_email(fields['email']))
         if not errors:
-            User.create(
+            user = User.create(
                 name=fields['name'],
                 email=fields['email'],
                 pwhash=bcrypt.generate_password_hash(fields['password'], 10)
             )
+            session['user_id'] = user.id
             flash('You were successfully registered')
             return redirect(url_for('view_all_courses'))
 
@@ -59,8 +71,10 @@ def login():
             elif not bcrypt.check_password_hash(user.pwhash, fields['password']):
                 errors['password'] = True
             else:
+                session['user_id'] = user.id
                 flash('You were successfully logged in')
-                return redirect(url_for('view_all_courses'))
+                redirect_url = request.args.get('next', url_for('view_all_courses'))
+                return redirect(redirect_url)
     # Creates and stores an anti-forgery token
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
@@ -149,9 +163,28 @@ def view_all_schools():
     return 'Show all schools'
 
 
-@app.route('/school/add/')
+@app.route('/school/add/', methods=['GET', 'POST'])
+@login_required
 def add_school():
-    return 'Add a new school'
+    errors = None
+    fields = None
+    if request.method == 'POST':
+        fields = {
+            'name': request.form['name'],
+            'url': request.form['url']
+        }
+        errors = check_add_school(fields=fields)
+        if not errors:
+            if School.get_by_name(fields['name']):
+                errors['name_exists'] = True
+            else:
+                school = School.create(
+                    name=fields['name'],
+                    url=fields['url']
+                )
+                flash('School created')
+                return redirect(url_for('view_school', school_id=school.id))
+    return render_template('add_school.html', fields=fields, errors=errors)
 
 
 @app.route('/school/<int:school_id>/')
