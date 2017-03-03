@@ -29,6 +29,7 @@ class User(Base):
         user = cls(name, email, pwhash)
         db_session.add(user)
         db_session.commit()
+        return user
 
 
 class Course(Base):
@@ -59,17 +60,35 @@ class Course(Base):
     @classmethod
     def create(cls, name, url, user_id, school_id, category_id):
         course = cls(name, url, user_id, school_id, category_id)
-        db_session.add()
+        db_session.add(course)
         db_session.commit()
 
 
 class School(Base):
     __tablename__ = 'schools'
     id = Column(Integer, Sequence('school_id_seq'), primary_key=True)
-    name = Column(String(50), nullable=False)
+    name = Column(String(50), nullable=False, unique=True)
+    url = Column(Text)
 
     courses = relationship("Course", back_populates="school")
 
+    def __init__(self, name, url):
+        self.name = name
+        self.url = url
+
+    def __repr__(self):
+        return '<School %r>' % (self.name)
+
+    @classmethod
+    def get_by_name(cls, name):
+        return cls.query.filter_by(name=name).first()
+
+    @classmethod
+    def create(cls, name, url):
+        school = cls(name, url)
+        db_session.add(school)
+        db_session.commit()
+        return school
 
 class Category(Base):
     __tablename__ = 'categories'
