@@ -168,6 +168,7 @@ def view_all_schools():
 def add_school():
     errors = None
     fields = None
+    user_id = session['user_id']
     if request.method == 'POST':
         fields = {
             'name': request.form['name'],
@@ -180,7 +181,8 @@ def add_school():
             else:
                 school = School.create(
                     name=fields['name'],
-                    url=fields['url']
+                    url=fields['url'],
+                    user_id=user_id
                 )
                 flash('School created')
                 return redirect(url_for('view_school', school_id=school.id))

@@ -12,6 +12,8 @@ class User(Base):
 
     courses = relationship("Course", back_populates="user")
 
+    schools = relationship("School", back_populates="user")
+
     def __init__(self, name, email, pwhash):
         self.name = name
         self.email = email
@@ -70,11 +72,15 @@ class School(Base):
     name = Column(String(50), nullable=False, unique=True)
     url = Column(Text)
 
+    user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="schools")
+
     courses = relationship("Course", back_populates="school")
 
-    def __init__(self, name, url):
+    def __init__(self, name, url, user_id):
         self.name = name
         self.url = url
+        self.user_id = user_id
 
     def __repr__(self):
         return '<School %r>' % (self.name)
@@ -84,8 +90,8 @@ class School(Base):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
-    def create(cls, name, url):
-        school = cls(name, url)
+    def create(cls, name, url, user_id):
+        school = cls(name, url, user_id)
         db_session.add(school)
         db_session.commit()
         return school
