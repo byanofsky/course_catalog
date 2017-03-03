@@ -31,3 +31,10 @@ def check_login(fields):
     if not fields['password']:
         errors['password'] = True
     return errors
+
+def check_add_school(fields):
+    errors = {}
+    for field in fields:
+        if fields[field] == '':
+            errors[field] = True
+    return errors
