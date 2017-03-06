@@ -1,10 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
-
-from course_catalog import app
+from course_catalog import db
 
 # from database import Base, db_session
 
-db = SQLAlchemy(app)
+# db = SQLAlchemy(app)
 db_session = db.session
 Base = db.Model
 Column = db.Column
