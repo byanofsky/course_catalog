@@ -57,5 +57,16 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.login('by@me.com', '12345')
         assert b'You were successfully logged in' in rv.data
 
+    def test_logout(self):
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        self.login('by@me.com', '12345')
+        rv = self.app.get('/school/add/')
+        assert b'Add School' in rv.data
+        rv = self.app.get('/logout/', follow_redirects=True)
+        assert b'You were successfully logged out' in rv.data
+        rv = self.app.get('/school/add/', follow_redirects=True)
+        assert b'Login' in rv.data
+
+
 if __name__ == '__main__':
     unittest.main()
