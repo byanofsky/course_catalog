@@ -136,7 +136,9 @@ def fbdisconnect():
 
 @app.route('/logout/')
 def logout():
-    pass
+    session.pop('user_id', None)
+    flash('You were successfully logged out')
+    return redirect(url_for('login'))
 
 
 @app.route('/course/add/', methods=['GET', 'POST'])
