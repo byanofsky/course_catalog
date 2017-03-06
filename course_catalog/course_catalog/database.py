@@ -2,6 +2,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
+# from course_catalog import app
+
+# from default_settings import DATABASE
+#
+# print DATABASE
+
 engine = create_engine('sqlite:///instance/course_catalog.db',
                        convert_unicode=True)
 db_session = scoped_session(sessionmaker(autocommit=False,
