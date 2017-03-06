@@ -1,4 +1,3 @@
-from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
 
 from course_catalog import app
