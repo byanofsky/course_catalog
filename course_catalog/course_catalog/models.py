@@ -1,7 +1,20 @@
-from sqlalchemy import Column, Integer, String, Sequence, ForeignKey, Text
 from sqlalchemy.orm import relationship
-from database import Base, db_session
+from flask_sqlalchemy import SQLAlchemy
 
+from course_catalog import app
+
+# from database import Base, db_session
+
+db = SQLAlchemy(app)
+db_session = db.session
+Base = db.Model
+Column = db.Column
+Integer = db.Integer
+String = db.String
+Sequence = db.Sequence
+ForeignKey = db.ForeignKey
+Text = db.Text
+relationship = db.relationship
 
 class User(Base):
     __tablename__ = 'users'
