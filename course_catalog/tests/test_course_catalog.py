@@ -39,5 +39,23 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.register('by@me.com', 'Brandon', '12345', '56789')
         assert b'Please re-enter your password correctly.' in rv.data
 
+    def login(self, email, password):
+        return self.app.post('/login/', data=dict(
+            email=email,
+            password=password
+        ), follow_redirects=True)
+
+    def test_login(self):
+        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
+        assert b'You were successfully registered' in rv.data
+        rv = self.login('by', '12345')
+        assert b'Please enter a valid email address.' in rv.data
+        rv = self.login('by@me.com', '567')
+        assert b'This password is incorrect.' in rv.data
+        rv = self.login('random@me.com', '12345')
+        assert b'There is no user with this email address.' in rv.data
+        rv = self.login('by@me.com', '12345')
+        assert b'You were successfully logged in' in rv.data
+
 if __name__ == '__main__':
     unittest.main()
