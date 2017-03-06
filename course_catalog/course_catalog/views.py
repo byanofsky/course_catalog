@@ -26,7 +26,8 @@ def login_required(f):
 @app.route('/')
 @app.route('/courses/')
 def view_all_courses():
-    return 'Show all courses'
+    courses = None
+    return render_template('view_all_courses.html', courses=courses)
 
 
 @app.route('/register/', methods=['GET', 'POST'])

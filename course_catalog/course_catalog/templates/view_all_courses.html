@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Courses{% endblock %}
+{% block body %}
+<h1>Courses</h1>
+
+{% if courses %}
+<ul>
+  {% for course in courses %}
+  <li>
+    {{ course.name }}
+    {{ course.url }}
+    {{ course.id }}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>
+  No courses
+</p>
+{% endif %}
+
+{% endblock %}
