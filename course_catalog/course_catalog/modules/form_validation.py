@@ -52,3 +52,10 @@ def check_add_category(fields):
         if fields[field] == '':
             errors[field] = True
     return errors
+
+def check_edit_category(fields):
+    errors = {}
+    for field in fields:
+        if fields[field] == '':
+            errors[field] = True
+    return errors

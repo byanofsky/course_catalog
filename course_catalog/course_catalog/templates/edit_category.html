@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Edit Category{% endblock %}
+{% block body %}
+<h1>Edit Category</h1>
+<form method="post">
+  <label>
+    Category Name
+    <input type="text" name="name" value="{{ fields.name }}">
+    {% if errors and errors.name_exists %}
+      <div class="error">
+        A category already exists with that name.
+      </div>
+    {% endif %}
+    {% if errors and errors.name %}
+      <div class="error">
+        Please enter a category name.
+      </div>
+    {% endif %}
+  </label>
+
+  <input type="submit" value="Submit">
+</form>
+{% endblock %}

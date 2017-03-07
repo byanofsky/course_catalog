@@ -8,7 +8,7 @@ import requests
 from course_catalog import app
 from models import User, School, Category
 from modules.form_validation import check_registration, check_login, \
-    check_add_school, check_edit_school, check_add_category
+    check_add_school, check_edit_school, check_add_category, check_edit_category
 
 
 bcrypt = Bcrypt(app)
@@ -292,9 +292,30 @@ def view_category(category_id):
     return render_template('view_category.html', category=category)
 
 
-@app.route('/category/<int:category_id>/edit/')
+@app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
 def edit_category(category_id):
-    return 'Edit category with id ' + str(category_id)
+    category = Category.get_by_id(category_id)
+    errors = None
+    if request.method == 'POST':
+        fields = {
+            'name': request.form['name']
+        }
+        errors = check_edit_category(fields=fields)
+        if not errors:
+            if (Category.get_by_name(fields['name']) and
+                    Category.get_by_name(fields['name']).id != category.id):
+                errors['name_exists'] = True
+            else:
+                category.edit(
+                    name=fields['name']
+                )
+                flash('Category edited')
+                return redirect(url_for('view_category', category_id=category.id))
+    else:
+        fields = {
+            'name': category.name
+        }
+    return render_template('edit_category.html', fields=fields, errors=errors)
 
 
 @app.route('/category/<int:category_id>/delete/')

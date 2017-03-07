@@ -151,6 +151,11 @@ class Category(Base):
     def get_by_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
+    def edit(self, name):
+        self.name = name
+        db_session.add(self)
+        db_session.commit()
+
     @classmethod
     def create(cls, name, user_id):
         category = cls(name, user_id)
