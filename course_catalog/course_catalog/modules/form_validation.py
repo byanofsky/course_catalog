@@ -38,3 +38,10 @@ def check_add_school(fields):
         if fields[field] == '':
             errors[field] = True
     return errors
+
+def check_edit_school(fields):
+    errors = {}
+    for field in fields:
+        if fields[field] == '':
+            errors[field] = True
+    return errors

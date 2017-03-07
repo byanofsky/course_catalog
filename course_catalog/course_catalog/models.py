@@ -95,6 +95,12 @@ class School(Base):
     def __repr__(self):
         return '<School %r>' % (self.name)
 
+    def edit(self, name, url):
+        self.name = name
+        self.url = url
+        db_session.add(self)
+        db_session.commit()
+
     @classmethod
     def get_by_name(cls, name):
         return cls.query.filter_by(name=name).first()

@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}Edit School{% endblock %}
+{% block body %}
+<h1>Edit School</h1>
+<form method="post">
+  <label>
+    School Name
+    <input type="text" name="name" value="{{ fields.name }}">
+    {% if errors and errors.name_exists %}
+      <div class="error">
+        A school already exists with that name.
+      </div>
+    {% endif %}
+    {% if errors and errors.name %}
+      <div class="error">
+        Please enter a school name.
+      </div>
+    {% endif %}
+  </label>
+
+  <label>
+    School URL
+    <input type="text" name="url" value="{{ fields.url }}">
+    {% if errors and errors.url %}
+      <div class="error">
+        Please enter a school url.
+      </div>
+    {% endif %}
+  </label>
+
+  <input type="submit" value="Submit">
+</form>
+{% endblock %}

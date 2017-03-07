@@ -7,7 +7,7 @@ import requests
 
 from course_catalog import app
 from models import User, School
-from modules.form_validation import check_registration, check_login, check_add_school
+from modules.form_validation import check_registration, check_login, check_add_school, check_edit_school
 
 
 bcrypt = Bcrypt(app)
@@ -18,6 +18,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get('user_id') is None:
+            flash('Please log in to continue')
             return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
@@ -199,9 +200,34 @@ def view_school(school_id):
     return render_template('view_school.html', school=school)
 
 
-@app.route('/school/<int:school_id>/edit/')
+@app.route('/school/<int:school_id>/edit/', methods=['GET', 'POST'])
+@login_required
 def edit_school(school_id):
-    return 'Edit school with id ' + str(school_id)
+    school = School.get_by_id(school_id)
+    errors = None
+    if request.method == 'POST':
+        fields = {
+            'name': request.form['name'],
+            'url': request.form['url']
+        }
+        errors = check_edit_school(fields=fields)
+        if not errors:
+            if (School.get_by_name(fields['name']) and
+                    School.get_by_name(fields['name']).id != school.id):
+                errors['name_exists'] = True
+            else:
+                school.edit(
+                    name=fields['name'],
+                    url=fields['url']
+                )
+                flash('School edited')
+                return redirect(url_for('view_school', school_id=school.id))
+    else:
+        fields = {
+            'name': school.name,
+            'url': school.url
+        }
+    return render_template('edit_school.html', fields=fields, errors=errors)
 
 
 @app.route('/school/<int:school_id>/delete/')
