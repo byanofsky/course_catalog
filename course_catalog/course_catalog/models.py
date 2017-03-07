@@ -13,6 +13,35 @@ ForeignKey = db.ForeignKey
 Text = db.Text
 relationship = db.relationship
 
+
+# Create helper methods for Base class model
+def create(cls, **kw):
+    instance = cls(**kw)
+    db_session.add(instance)
+    db_session.commit()
+    return instance
+
+def get_by_id(cls, id):
+    return cls.query.filter_by(id=id).first()
+
+def delete(self):
+    db_session.delete(self)
+    db_session.commit()
+
+def edit(self, **kw):
+    for i in kw:
+        setattr(self, i, kw[i])
+    db_session.add(self)
+    db_session.commit()
+
+
+# Assign helper methods to Base class model
+Base.create = classmethod(create)
+Base.get_by_id = classmethod(get_by_id)
+Base.delete = delete
+Base.edit = edit
+
+
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, Sequence('user_id_seq'), primary_key=True)
@@ -37,13 +66,6 @@ class User(Base):
     @classmethod
     def get_by_email(cls, email):
         return cls.query.filter_by(email=email).first()
-
-    @classmethod
-    def create(cls, name, email, pwhash):
-        user = cls(name, email, pwhash)
-        db_session.add(user)
-        db_session.commit()
-        return user
 
 
 class Course(Base):
@@ -71,12 +93,6 @@ class Course(Base):
     def __repr__(self):
         return '<Course %r>' % (self.name)
 
-    @classmethod
-    def create(cls, name, url, user_id, school_id, category_id):
-        course = cls(name, url, user_id, school_id, category_id)
-        db_session.add(course)
-        db_session.commit()
-
 
 class School(Base):
     __tablename__ = 'schools'
@@ -97,34 +113,13 @@ class School(Base):
     def __repr__(self):
         return '<School %r>' % (self.name)
 
-    def edit(self, name, url):
-        self.name = name
-        self.url = url
-        db_session.add(self)
-        db_session.commit()
-
-    def delete(self):
-        db_session.delete(self)
-        db_session.commit()
-
     @classmethod
     def get_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
 
     @classmethod
-    def get_by_id(cls, id):
-        return cls.query.filter_by(id=id).first()
-
-    @classmethod
     def get_all(cls):
         return cls.query.all()
-
-    @classmethod
-    def create(cls, name, url, user_id):
-        school = cls(name, url, user_id)
-        db_session.add(school)
-        db_session.commit()
-        return school
 
 class Category(Base):
     __tablename__ = 'categories'
@@ -146,19 +141,3 @@ class Category(Base):
     @classmethod
     def get_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
-
-    @classmethod
-    def get_by_id(cls, id):
-        return cls.query.filter_by(id=id).first()
-
-    def edit(self, name):
-        self.name = name
-        db_session.add(self)
-        db_session.commit()
-
-    @classmethod
-    def create(cls, name, user_id):
-        category = cls(name, user_id)
-        db_session.add(category)
-        db_session.commit()
-        return category
