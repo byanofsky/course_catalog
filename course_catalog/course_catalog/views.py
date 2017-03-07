@@ -243,6 +243,7 @@ def edit_school(school_id):
 
 
 @app.route('/school/<int:school_id>/delete/', methods=['GET', 'POST'])
+@user_authorized
 def delete_school(school_id):
     school = School.get_by_id(school_id)
     if school is None:
