@@ -2,6 +2,7 @@ import os
 import course_catalog
 import unittest
 import tempfile
+import flask
 
 class CourseCatalogTestCase(unittest.TestCase):
     def setUp(self):
@@ -66,6 +67,20 @@ class CourseCatalogTestCase(unittest.TestCase):
         assert b'You were successfully logged out' in rv.data
         rv = self.app.get('/school/add/', follow_redirects=True)
         assert b'Login' in rv.data
+
+    def test_login_next(self):
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        self.app.get('/logout/', follow_redirects=True)
+
+        with course_catalog.app.test_client() as c:
+            rv = c.get('/school/add/', follow_redirects=True)
+            arg = flask.request.args['next']
+            rv = c.post('/login/?next=' + arg, data=dict(
+                email='by@me.com',
+                password='12345'
+            ), follow_redirects=True)
+            assert b'Add School' in rv.data
+
 
 
 if __name__ == '__main__':
