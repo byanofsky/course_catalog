@@ -105,14 +105,16 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.app.post('/school/add/', data=dict(
             name='Udacity',
             url='www.udacity.com'
-        ), follow_redirects=True)
+        ))
+        school_url = rv.headers['Location']
+        rv = self.app.get(school_url)
         assert b'School created' in rv.data
         assert b'Udacity' in rv.data
         assert b'www.udacity.com' in rv.data
         assert b'Brandon' in rv.data
-        rv = self.app.post('/school/1/delete/', follow_redirects=True)
+        rv = self.app.post(school_url + 'delete/', follow_redirects=True)
         assert b'School successfully deleted' in rv.data
-        rv = self.app.get('/school/1/delete/', follow_redirects=True)
+        rv = self.app.get(school_url + 'delete/', follow_redirects=True)
         assert b'There is no school with that id' in rv.data
 
 if __name__ == '__main__':
