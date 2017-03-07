@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}{{ category.name }}{% endblock %}
+{% block body %}
+<h1>{{ category.name }}</h1>
+
+<ul>
+  <li>
+    User name:
+    {{ category.user.name}}
+  </li>
+</ul>
+
+<ul>
+  {% if courses %}
+  {% for course in courses %}
+    <li>
+      {{ course }}
+    </li>
+  {% endfor %}
+  {% endif %}
+</ul>
+
+{% endblock %}

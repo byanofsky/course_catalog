@@ -288,7 +288,8 @@ def add_category():
 
 @app.route('/category/<int:category_id>/')
 def view_category(category_id):
-    return 'View single category with id ' + str(category_id)
+    category = Category.get_by_id(category_id)
+    return render_template('view_category.html', category=category)
 
 
 @app.route('/category/<int:category_id>/edit/')
