@@ -96,8 +96,24 @@ class CourseCatalogTestCase(unittest.TestCase):
         assert b'www.udacity.com' in rv.data
         assert b'Brandon' in rv.data
 
-
-
+    def test_add_and_delete_school(self):
+        self.register('by2@me.com', 'Brandon', '12345', '12345')
+        rv = self.login('by2@me.com', '12345')
+        assert b'You were successfully logged in' in rv.data
+        rv = self.app.get('/school/add/')
+        assert b'Add School' in rv.data
+        rv = self.app.post('/school/add/', data=dict(
+            name='Udacity',
+            url='www.udacity.com'
+        ), follow_redirects=True)
+        assert b'School created' in rv.data
+        assert b'Udacity' in rv.data
+        assert b'www.udacity.com' in rv.data
+        assert b'Brandon' in rv.data
+        rv = self.app.post('/school/1/delete/', follow_redirects=True)
+        assert b'School successfully deleted' in rv.data
+        rv = self.app.get('/school/1/delete/', follow_redirects=True)
+        assert b'There is no school with that id' in rv.data
 
 if __name__ == '__main__':
     unittest.main()
