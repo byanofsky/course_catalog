@@ -6,8 +6,9 @@ from flask_bcrypt import Bcrypt
 import requests
 
 from course_catalog import app
-from models import User, School
-from modules.form_validation import check_registration, check_login, check_add_school, check_edit_school
+from models import User, School, Category
+from modules.form_validation import check_registration, check_login, \
+    check_add_school, check_edit_school, check_add_category
 
 
 bcrypt = Bcrypt(app)
@@ -261,9 +262,28 @@ def view_all_categories():
     return 'Show all categories'
 
 
-@app.route('/category/add/')
+@app.route('/category/add/', methods=['GET', 'POST'])
+@login_required
 def add_category():
-    return 'Add a new category'
+    errors = None
+    fields = None
+    user_id = session['user_id']
+    if request.method == 'POST':
+        fields = {
+            'name': request.form['name']
+        }
+        errors = check_add_category(fields=fields)
+        if not errors:
+            if Category.get_by_name(fields['name']):
+                errors['name_exists'] = True
+            else:
+                category = Category.create(
+                    name=fields['name'],
+                    user_id=user_id
+                )
+                flash('Category created')
+                return redirect(url_for('view_category', category_id=category.id))
+    return render_template('add_category.html', fields=fields, errors=errors)
 
 
 @app.route('/category/<int:category_id>/')

@@ -24,6 +24,8 @@ class User(Base):
 
     schools = relationship("School", back_populates="user")
 
+    categories = relationship("Category", back_populates="user")
+
     def __init__(self, name, email, pwhash):
         self.name = name
         self.email = email
@@ -129,4 +131,29 @@ class Category(Base):
     id = Column(Integer, Sequence('category_id_seq'), primary_key=True)
     name = Column(String(50), nullable=False)
 
+    user_id = Column(Integer, ForeignKey('users.id'))
+    user = relationship("User", back_populates="categories")
+
     courses = relationship("Course", back_populates="category")
+
+    def __init__(self, name, user_id):
+        self.name = name
+        self.user_id = user_id
+
+    def __repr__(self):
+        return '<Category %r>' % (self.name)
+
+    @classmethod
+    def get_by_name(cls, name):
+        return cls.query.filter_by(name=name).first()
+
+    @classmethod
+    def get_by_id(cls, id):
+        return cls.query.filter_by(id=id).first()
+
+    @classmethod
+    def create(cls, name, user_id):
+        category = cls(name, user_id)
+        db_session.add(category)
+        db_session.commit()
+        return category

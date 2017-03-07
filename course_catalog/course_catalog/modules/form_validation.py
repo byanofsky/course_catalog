@@ -45,3 +45,10 @@ def check_edit_school(fields):
         if fields[field] == '':
             errors[field] = True
     return errors
+
+def check_add_category(fields):
+    errors = {}
+    for field in fields:
+        if fields[field] == '':
+            errors[field] = True
+    return errors
