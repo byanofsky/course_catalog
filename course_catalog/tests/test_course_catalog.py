@@ -81,6 +81,22 @@ class CourseCatalogTestCase(unittest.TestCase):
             ), follow_redirects=True)
             assert b'Add School' in rv.data
 
+    def test_add_school(self):
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        rv = self.login('by@me.com', '12345')
+        assert b'You were successfully logged in' in rv.data
+        rv = self.app.get('/school/add/')
+        assert b'Add School' in rv.data
+        rv = self.app.post('/school/add/', data=dict(
+            name='Udacity',
+            url='www.udacity.com'
+        ), follow_redirects=True)
+        assert b'School created' in rv.data
+        assert b'Udacity' in rv.data
+        assert b'www.udacity.com' in rv.data
+        assert b'Brandon' in rv.data
+
+
 
 
 if __name__ == '__main__':
