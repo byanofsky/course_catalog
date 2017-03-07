@@ -120,5 +120,16 @@ class CourseCatalogTestCase(unittest.TestCase):
         # rv = self.app.get(school_url + 'delete/', follow_redirects=True)
         # assert b'There is no school with that id' in rv.data
 
+    def test_categories(self):
+        self.register('by3@me.com', 'User Test', '12345', '12345')
+        rv = self.app.get('/category/add/')
+        assert b'Add Category' in rv.data
+        rv = self.app.post('/category/add/', data=dict(
+            name='Test Category',
+        ), follow_redirects=True)
+        assert b'Category created' in rv.data
+        assert b'Test Category' in rv.data
+        assert b'User Test' in rv.data
+
 if __name__ == '__main__':
     unittest.main()
