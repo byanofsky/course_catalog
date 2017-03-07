@@ -195,7 +195,8 @@ def add_school():
 
 @app.route('/school/<int:school_id>/')
 def view_school(school_id):
-    return 'View single school with id ' + str(school_id)
+    school = School.get_by_id(school_id)
+    return render_template('view_school.html', school=school)
 
 
 @app.route('/school/<int:school_id>/edit/')
