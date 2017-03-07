@@ -101,6 +101,10 @@ class School(Base):
         db_session.add(self)
         db_session.commit()
 
+    def delete(self):
+        db_session.delete(self)
+        db_session.commit()
+
     @classmethod
     def get_by_name(cls, name):
         return cls.query.filter_by(name=name).first()

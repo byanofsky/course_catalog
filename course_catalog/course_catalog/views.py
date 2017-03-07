@@ -242,9 +242,17 @@ def edit_school(school_id):
     return render_template('edit_school.html', fields=fields, errors=errors)
 
 
-@app.route('/school/<int:school_id>/delete/')
+@app.route('/school/<int:school_id>/delete/', methods=['GET', 'POST'])
 def delete_school(school_id):
-    return 'Delete school with id ' + str(school_id)
+    school = School.get_by_id(school_id)
+    if school is None:
+        flash('There is no school with that id')
+        return redirect(url_for('view_all_schools'))
+    if request.method == 'POST':
+        school.delete()
+        flash('School successfully deleted')
+        return redirect(url_for('view_all_schools'))
+    return render_template('delete_school.html', school=school)
 
 
 @app.route('/categories/')

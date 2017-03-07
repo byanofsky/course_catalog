@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Delete School{% endblock %}
+{% block body %}
+<h1>Delete School</h1>
+<p>
+  You are about to delete the school with the name {{ school.name }}.
+</p>
+<p>
+  Click "Confirm" to complete deletion.
+</p>
+<form method="post">
+  <input type="submit" value="Confirm">
+</form>
+{% endblock %}
