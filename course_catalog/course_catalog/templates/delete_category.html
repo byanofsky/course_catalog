@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}Delete Category{% endblock %}
+{% block body %}
+<h1>Delete Category</h1>
+<p>
+  You are about to delete the category with the name {{ category.name }}.
+</p>
+<p>
+  Click "Confirm" to complete deletion.
+</p>
+<form method="post">
+  <input type="submit" value="Confirm">
+</form>
+{% endblock %}

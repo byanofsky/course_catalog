@@ -322,6 +322,14 @@ def edit_category(category_id):
     return render_template('edit_category.html', fields=fields, errors=errors)
 
 
-@app.route('/category/<int:category_id>/delete/')
+@app.route('/category/<int:category_id>/delete/', methods=['POST', 'GET'])
 def delete_category(category_id):
-    return 'Delete category with id ' + str(category_id)
+    category = Category.get_by_id(category_id)
+    if category is None:
+        flash('There is no category with that id')
+        return redirect(url_for('view_all_categories'))
+    if request.method == 'POST':
+        category.delete()
+        flash('category successfully deleted')
+        return redirect(url_for('view_all_categories'))
+    return render_template('delete_category.html', category=category)
