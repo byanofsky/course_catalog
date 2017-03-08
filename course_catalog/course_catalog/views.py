@@ -296,7 +296,7 @@ def view_category(category_id):
 
 
 @app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
-# @user_authorized
+@user_authorized('category_id', Category)
 def edit_category(category_id):
     category = Category.get_by_id(category_id)
     errors = None
