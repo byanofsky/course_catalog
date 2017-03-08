@@ -25,16 +25,19 @@ def login_required(f):
     return decorated_function
 
 
-def user_authorized(f):
-    @wraps(f)
-    def decorated_function(school_id, *args, **kwargs):
-        user_id = session['user_id']
-        school = School.query.filter_by(id=school_id).first()
-        if session.get('user_id') is None or school.user_id != user_id:
-            flash('You are not authorized to edit this')
-            return redirect(url_for('login', next=request.url))
-        return f(school_id, *args, **kwargs)
-    return decorated_function
+def user_authorized(id_type, model):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user_id = session.get('user_id')
+            item_id = kwargs[id_type]
+            item = model.query.filter_by(id=item_id).first()
+            if user_id is None or user_id != item.user_id:
+                flash('You are not authorized to edit this')
+                return redirect(url_for('login', next=request.url))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 @app.route('/')
@@ -214,7 +217,7 @@ def view_school(school_id):
 
 
 @app.route('/school/<int:school_id>/edit/', methods=['GET', 'POST'])
-@user_authorized
+@user_authorized('school_id', School)
 def edit_school(school_id):
     school = School.get_by_id(school_id)
     errors = None
@@ -244,7 +247,7 @@ def edit_school(school_id):
 
 
 @app.route('/school/<int:school_id>/delete/', methods=['GET', 'POST'])
-@user_authorized
+# @user_authorized
 def delete_school(school_id):
     school = School.get_by_id(school_id)
     if school is None:
@@ -293,6 +296,7 @@ def view_category(category_id):
 
 
 @app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
+# @user_authorized
 def edit_category(category_id):
     category = Category.get_by_id(category_id)
     errors = None
