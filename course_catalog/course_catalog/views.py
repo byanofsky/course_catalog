@@ -262,7 +262,8 @@ def delete_school(school_id):
 
 @app.route('/categories/')
 def view_all_categories():
-    return 'Show all categories'
+    categories = Category.get_all()
+    return render_template('view_all_categories.html', categories=categories)
 
 
 @app.route('/category/add/', methods=['GET', 'POST'])

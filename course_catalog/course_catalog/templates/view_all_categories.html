@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}Categories{% endblock %}
+{% block body %}
+<h1>Categories</h1>
+
+{% if categories %}
+<ul>
+  {% for category in categories %}
+  <li>
+    <a href="{{ url_for('view_category', category_id=category.id) }}">{{ category.name }}</a>
+    {{ category.url }}
+    {{ category.id }}
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>
+  No Categories
+</p>
+{% endif %}
+
+{% endblock %}
