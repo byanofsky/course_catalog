@@ -125,11 +125,33 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.app.get('/category/add/')
         assert b'Add Category' in rv.data
         rv = self.app.post('/category/add/', data=dict(
+            name='',
+        ), follow_redirects=True)
+        assert b'Please enter a category name' in rv.data
+        rv = self.app.post('/category/add/', data=dict(
             name='Test Category',
         ), follow_redirects=True)
         assert b'Category created' in rv.data
         assert b'Test Category' in rv.data
         assert b'User Test' in rv.data
+        rv = self.app.post('/category/add/', data=dict(
+            name='Test Category 2',
+        ), follow_redirects=True)
+        assert b'Test Category 2' in rv.data
+        assert b'User Test' in rv.data
+        rv = self.app.post('/category/1/edit/', data=dict(
+            name='Test Category 1',
+        ), follow_redirects=True)
+        assert b'Category edited' in rv.data
+        assert b'Test Category 1' in rv.data
+        assert b'User Test' in rv.data
+        rv = self.app.get('/categories/')
+        assert b'Test Category 1' in rv.data
+        assert b'Test Category 2' in rv.data
+        rv = self.app.post('/category/1/delete/', follow_redirects=True)
+        assert b'Category successfully deleted' in rv.data
+        rv = self.app.get('/categories/')
+        assert b'Test Category 1' not in rv.data
 
 if __name__ == '__main__':
     unittest.main()
