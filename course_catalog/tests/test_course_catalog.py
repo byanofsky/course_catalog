@@ -75,9 +75,9 @@ class CourseCatalogTestCase(unittest.TestCase):
             self.register('by@me.com', 'Brandon', '12345', '12345')
             self.app.get('/logout/', follow_redirects=True)
             assert 'user_id' not in flask.session
-            self.app.get('/school/add/', follow_redirects=True)
-            url = flask.request.args['next']
-            rv = self.app.post('/login/?next=' + url, data=dict(
+            rv = self.app.get('/school/add/')
+            url = rv.headers['Location']
+            rv = self.app.post(url, data=dict(
                 email='by@me.com',
                 password='12345'
             ), follow_redirects=True)
