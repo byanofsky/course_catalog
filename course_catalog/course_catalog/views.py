@@ -331,6 +331,6 @@ def delete_category(category_id):
         return redirect(url_for('view_all_categories'))
     if request.method == 'POST':
         category.delete()
-        flash('category successfully deleted')
+        flash('Category successfully deleted')
         return redirect(url_for('view_all_categories'))
     return render_template('delete_category.html', category=category)
