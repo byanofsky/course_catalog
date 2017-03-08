@@ -25,17 +25,16 @@ def login_required(f):
     return decorated_function
 
 
-def user_authorized(id_type, model):
+def user_authorized(model):
     def decorator(f):
         @wraps(f)
-        def decorated_function(*args, **kwargs):
+        def decorated_function(id, *args, **kwargs):
             user_id = session.get('user_id')
-            item_id = kwargs[id_type]
-            item = model.query.filter_by(id=item_id).first()
+            item = model.query.filter_by(id=id).first()
             if user_id is None or user_id != item.user_id:
                 flash('You are not authorized to edit this')
                 return redirect(url_for('login', next=request.url))
-            return f(*args, **kwargs)
+            return f(id, *args, **kwargs)
         return decorated_function
     return decorator
 
@@ -206,20 +205,20 @@ def add_school():
                     user_id=user_id
                 )
                 flash('School created')
-                return redirect(url_for('view_school', school_id=school.id))
+                return redirect(url_for('view_school', id=school.id))
     return render_template('add_school.html', fields=fields, errors=errors)
 
 
-@app.route('/school/<int:school_id>/')
-def view_school(school_id):
-    school = School.get_by_id(school_id)
+@app.route('/school/<int:id>/')
+def view_school(id):
+    school = School.get_by_id(id)
     return render_template('view_school.html', school=school)
 
 
-@app.route('/school/<int:school_id>/edit/', methods=['GET', 'POST'])
-@user_authorized('school_id', School)
-def edit_school(school_id):
-    school = School.get_by_id(school_id)
+@app.route('/school/<int:id>/edit/', methods=['GET', 'POST'])
+@user_authorized(School)
+def edit_school(id):
+    school = School.get_by_id(id)
     errors = None
     if request.method == 'POST':
         fields = {
@@ -237,7 +236,7 @@ def edit_school(school_id):
                     url=fields['url']
                 )
                 flash('School edited')
-                return redirect(url_for('view_school', school_id=school.id))
+                return redirect(url_for('view_school', id=school.id))
     else:
         fields = {
             'name': school.name,
@@ -246,10 +245,10 @@ def edit_school(school_id):
     return render_template('edit_school.html', fields=fields, errors=errors)
 
 
-@app.route('/school/<int:school_id>/delete/', methods=['GET', 'POST'])
+@app.route('/school/<int:id>/delete/', methods=['GET', 'POST'])
 # @user_authorized
-def delete_school(school_id):
-    school = School.get_by_id(school_id)
+def delete_school(id):
+    school = School.get_by_id(id)
     if school is None:
         flash('There is no school with that id')
         return redirect(url_for('view_all_schools'))
@@ -286,20 +285,20 @@ def add_category():
                     user_id=user_id
                 )
                 flash('Category created')
-                return redirect(url_for('view_category', category_id=category.id))
+                return redirect(url_for('view_category', id=category.id))
     return render_template('add_category.html', fields=fields, errors=errors)
 
 
-@app.route('/category/<int:category_id>/')
-def view_category(category_id):
-    category = Category.get_by_id(category_id)
+@app.route('/category/<int:id>/')
+def view_category(id):
+    category = Category.get_by_id(id)
     return render_template('view_category.html', category=category)
 
 
-@app.route('/category/<int:category_id>/edit/', methods=['GET', 'POST'])
-@user_authorized('category_id', Category)
-def edit_category(category_id):
-    category = Category.get_by_id(category_id)
+@app.route('/category/<int:id>/edit/', methods=['GET', 'POST'])
+@user_authorized(Category)
+def edit_category(id):
+    category = Category.get_by_id(id)
     errors = None
     if request.method == 'POST':
         fields = {
@@ -315,7 +314,7 @@ def edit_category(category_id):
                     name=fields['name']
                 )
                 flash('Category edited')
-                return redirect(url_for('view_category', category_id=category.id))
+                return redirect(url_for('view_category', id=category.id))
     else:
         fields = {
             'name': category.name
@@ -323,9 +322,9 @@ def edit_category(category_id):
     return render_template('edit_category.html', fields=fields, errors=errors)
 
 
-@app.route('/category/<int:category_id>/delete/', methods=['POST', 'GET'])
-def delete_category(category_id):
-    category = Category.get_by_id(category_id)
+@app.route('/category/<int:id>/delete/', methods=['POST', 'GET'])
+def delete_category(id):
+    category = Category.get_by_id(id)
     if category is None:
         flash('There is no category with that id')
         return redirect(url_for('view_all_categories'))
