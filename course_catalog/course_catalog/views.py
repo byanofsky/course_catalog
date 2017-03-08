@@ -158,8 +158,39 @@ def logout():
 
 
 @app.route('/course/add/', methods=['GET', 'POST'])
+@login_required
 def add_course():
-    return render_template('add_course.html')
+    errors = None
+    fields = None
+    user_id = session['user_id']
+    if method == 'POST':
+        fields = {
+            'name': request.form['name'],
+            'url': request.form['url'],
+            'school': request.form['school'],
+            'category': request.form['category']
+        }
+        errors = check_add_course(fields=fields)
+        if not errors:
+            # TODO: check if course in school already
+            if Course.get_by_name(fields['name']):
+                errors['name_exists'] = True
+            else:
+                school = School.create(
+                    name=fields['name'],
+                    url=fields['url'],
+                    user_id=user_id
+                )
+                flash('School created')
+                return redirect(url_for('view_school', id=school.id))
+    else:
+        categories = Category.get_all()
+        schools = School.get_all()
+    return render_template('add_course.html',
+                           fields=fields,
+                           categories=categories,
+                           schools=schools,
+                           errors=errors)
 
 
 @app.route('/course/<int:course_id>/')

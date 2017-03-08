@@ -14,8 +14,27 @@
   </label>
 
   <label>
+    School
+    <select name="school">
+      <option selected disabled>Choose a School</option>
+      {% if schools %}
+      {% for school in schools %}
+      <option value="{{ school.id }}">{{ school.name }}</option>
+      {% endfor %}
+      {% endif %}
+    </select>
+  </label>
+
+  <label>
     Category
-    <input type="text" name="name" value="">
+    <select name="category">
+      <option selected disabled>Choose a Category</option>
+      {% if categories %}
+      {% for category in categories %}
+      <option value="{{ category.id }}">{{ category.name }}</option>
+      {% endfor %}
+      {% endif %}
+    </select>
   </label>
 
   <input type="submit" value="Submit">
