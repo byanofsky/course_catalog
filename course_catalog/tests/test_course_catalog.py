@@ -28,17 +28,17 @@ class CourseCatalogTestCase(unittest.TestCase):
             verify_password=verify_password,
         ), follow_redirects=True)
 
-    def test_registration(self):
-        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
-        assert b'You were successfully registered' in rv.data
+    def test_registration_errors(self):
         rv = self.register('by', 'Brandon', '12345', '12345')
         assert b'Please enter a valid email address.' in rv.data
-        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
-        assert b'A user already exists with this email address.' in rv.data
         rv = self.register('by@me.com', 'Brandon', '12', '12')
         assert b'Please enter a valid password, at least 3 characters long.' in rv.data
         rv = self.register('by@me.com', 'Brandon', '12345', '56789')
         assert b'Please re-enter your password correctly.' in rv.data
+        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
+        assert b'You were successfully registered' in rv.data
+        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
+        assert b'A user already exists with this email address.' in rv.data
 
     def login(self, email, password):
         return self.app.post('/login/', data=dict(
@@ -58,28 +58,31 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.login('by@me.com', '12345')
         assert b'You were successfully logged in' in rv.data
 
-    def test_logout(self):
-        self.register('by@me.com', 'Brandon', '12345', '12345')
-        self.login('by@me.com', '12345')
-        rv = self.app.get('/school/add/')
-        assert b'Add School' in rv.data
-        rv = self.app.get('/logout/', follow_redirects=True)
-        assert b'You were successfully logged out' in rv.data
-        rv = self.app.get('/school/add/', follow_redirects=True)
-        assert b'Login' in rv.data
+    def test_registration_and_login_cookies(self):
+        with self.app:
+            self.app.get('/')
+            rv = self.register('by@me.com', 'Brandon', '12345', '12345')
+            assert b'You were successfully registered' in rv.data
+            assert flask.session['user_id'] == 1
+            self.app.get('/logout/')
+            assert 'user_id' not in flask.session
+            rv = self.login('by@me.com', '12345')
+            assert b'You were successfully logged in' in rv.data
+            assert flask.session['user_id'] == 1
 
     def test_login_next(self):
-        self.register('by@me.com', 'Brandon', '12345', '12345')
-        self.app.get('/logout/', follow_redirects=True)
-
-        with course_catalog.app.test_client() as c:
-            rv = c.get('/school/add/', follow_redirects=True)
-            arg = flask.request.args['next']
-            rv = c.post('/login/?next=' + arg, data=dict(
+        with self.app:
+            self.register('by@me.com', 'Brandon', '12345', '12345')
+            self.app.get('/logout/', follow_redirects=True)
+            assert 'user_id' not in flask.session
+            self.app.get('/school/add/', follow_redirects=True)
+            url = flask.request.args['next']
+            rv = self.app.post('/login/?next=' + url, data=dict(
                 email='by@me.com',
                 password='12345'
             ), follow_redirects=True)
             assert b'Add School' in rv.data
+            assert flask.session['user_id'] == 1
 
     def test_add_school(self):
         self.register('by@me.com', 'Brandon', '12345', '12345')
