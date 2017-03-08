@@ -24,6 +24,9 @@ def create(cls, **kw):
 def get_by_id(cls, id):
     return cls.query.filter_by(id=id).first()
 
+def get_all(cls):
+    return cls.query.all()
+
 def delete(self):
     db_session.delete(self)
     db_session.commit()
@@ -38,6 +41,7 @@ def edit(self, **kw):
 # Assign helper methods to Base class model
 Base.create = classmethod(create)
 Base.get_by_id = classmethod(get_by_id)
+Base.get_all = classmethod(get_all)
 Base.delete = delete
 Base.edit = edit
 
@@ -116,10 +120,6 @@ class School(Base):
     @classmethod
     def get_by_name(cls, name):
         return cls.query.filter_by(name=name).first()
-
-    @classmethod
-    def get_all(cls):
-        return cls.query.all()
 
 class Category(Base):
     __tablename__ = 'categories'
