@@ -241,9 +241,17 @@ def edit_course(id):
         return render_template('edit_course.html', fields=fields, errors=errors, categories=categories, schools=schools)
 
 
-@app.route('/course/<int:id>/delete/')
+@app.route('/course/<int:id>/delete/', methods=['GET', 'POST'])
 def delete_course(id):
-    return 'Delete course with id ' + str(id)
+        course = Course.get_by_id(id)
+        if course is None:
+            flash('There is no course with that id')
+            return redirect(url_for('view_all_courses'))
+        if request.method == 'POST':
+            course.delete()
+            flash('Course successfully deleted')
+            return redirect(url_for('view_all_courses'))
+        return render_template('delete_course.html', course=course)
 
 
 @app.route('/schools/')
