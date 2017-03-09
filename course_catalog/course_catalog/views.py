@@ -198,13 +198,13 @@ def add_course():
 
 @app.route('/course/<int:id>/')
 def view_course(id):
-    course = Course.get_by_id(id)
+    course = Course.get_or_404(id)
     return render_template('view_course.html', course=course)
 
 
 @app.route('/course/<int:id>/edit/', methods=['GET', 'POST'])
 def edit_course(id):
-        course = Course.get_by_id(id)
+        course = Course.get_or_404(id)
         errors = None
         categories = Category.get_all()
         schools = School.get_all()
@@ -242,7 +242,7 @@ def edit_course(id):
 
 @app.route('/course/<int:id>/delete/', methods=['GET', 'POST'])
 def delete_course(id):
-        course = Course.get_by_id(id)
+        course = Course.get_or_404(id)
         if course is None:
             flash('There is no course with that id')
             return redirect(url_for('view_all_courses'))
@@ -287,14 +287,14 @@ def add_school():
 
 @app.route('/school/<int:id>/')
 def view_school(id):
-    school = School.get_by_id(id)
+    school = School.get_or_404(id)
     return render_template('view_school.html', school=school)
 
 
 @app.route('/school/<int:id>/edit/', methods=['GET', 'POST'])
 @user_authorized(School)
 def edit_school(id):
-    school = School.get_by_id(id)
+    school = School.get_or_404(id)
     errors = None
     if request.method == 'POST':
         fields = {
@@ -324,7 +324,7 @@ def edit_school(id):
 @app.route('/school/<int:id>/delete/', methods=['GET', 'POST'])
 # @user_authorized
 def delete_school(id):
-    school = School.get_by_id(id)
+    school = School.get_or_404(id)
     if school is None:
         flash('There is no school with that id')
         return redirect(url_for('view_all_schools'))
@@ -367,14 +367,14 @@ def add_category():
 
 @app.route('/category/<int:id>/')
 def view_category(id):
-    category = Category.get_by_id(id)
+    category = Category.get_or_404(id)
     return render_template('view_category.html', category=category)
 
 
 @app.route('/category/<int:id>/edit/', methods=['GET', 'POST'])
 @user_authorized(Category)
 def edit_category(id):
-    category = Category.get_by_id(id)
+    category = Category.get_or_404(id)
     errors = None
     if request.method == 'POST':
         fields = {
@@ -400,7 +400,7 @@ def edit_category(id):
 
 @app.route('/category/<int:id>/delete/', methods=['POST', 'GET'])
 def delete_category(id):
-    category = Category.get_by_id(id)
+    category = Category.get_or_404(id)
     if category is None:
         flash('There is no category with that id')
         return redirect(url_for('view_all_categories'))

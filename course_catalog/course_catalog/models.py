@@ -22,7 +22,10 @@ def create(cls, **kw):
     return instance
 
 def get_by_id(cls, id):
-    return cls.query.filter_by(id=id).first()
+    return cls.query.get(id)
+
+def get_or_404(cls, id):
+    return cls.query.get_or_404(id)
 
 def get_all(cls):
     return cls.query.all()
@@ -41,6 +44,7 @@ def edit(self, **kw):
 # Assign helper methods to Base class model
 Base.create = classmethod(create)
 Base.get_by_id = classmethod(get_by_id)
+Base.get_or_404 = classmethod(get_or_404)
 Base.get_all = classmethod(get_all)
 Base.delete = delete
 Base.edit = edit
