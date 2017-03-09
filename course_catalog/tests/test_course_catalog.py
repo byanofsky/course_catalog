@@ -16,10 +16,7 @@ class CourseCatalogTestCase(unittest.TestCase):
     def tearDown(self):
         os.unlink(os.path.abspath(self.test_db_path))
 
-    def test_empty_db(self):
-        rv = self.app.get('/')
-        assert b'No courses' in rv.data
-
+    # Method to help with registering account
     def register(self, email, name, password, verify_password):
         return self.app.post('/register/', data=dict(
             email=email,
@@ -28,66 +25,112 @@ class CourseCatalogTestCase(unittest.TestCase):
             verify_password=verify_password,
         ), follow_redirects=True)
 
-    def test_registration_errors(self):
-        rv = self.register('by', 'Brandon', '12345', '12345')
-        assert b'Please enter a valid email address.' in rv.data
-        rv = self.register('by@me.com', 'Brandon', '12', '12')
-        assert b'Please enter a valid password, at least 3 characters long.' in rv.data
-        rv = self.register('by@me.com', 'Brandon', '12345', '56789')
-        assert b'Please re-enter your password correctly.' in rv.data
-        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
-        assert b'You were successfully registered' in rv.data
-        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
-        assert b'A user already exists with this email address.' in rv.data
-
+    # Method to help with login
     def login(self, email, password):
         return self.app.post('/login/', data=dict(
             email=email,
             password=password
         ), follow_redirects=True)
 
-    def test_login(self):
+    # Test on a blank db to make sure starting clean
+    def test_empty_db(self):
+        rv = self.app.get('/')
+        assert b'No courses' in rv.data
+        rv = self.app.get('/schools/')
+        assert b'No schools' in rv.data
+        rv = self.app.get('/categories/')
+        assert b'No categories' in rv.data
+
+    # Test form validation on registraton form
+    def test_registration_errors(self):
+        # Test for valid email address
+        rv = self.register('by', 'Brandon', '12345', '12345')
+        assert b'Please enter a valid email address.' in rv.data
+        # Test that name is entered
+        rv = self.register('by', '', '12345', '12345')
+        assert b'Please enter a valid name.' in rv.data
+        # Test that password is valid
+        rv = self.register('by@me.com', 'Brandon', '12', '12')
+        assert b'Please enter a valid password, at least 3 characters long.' in rv.data
+        # Test that password is verified
+        rv = self.register('by@me.com', 'Brandon', '12345', '56789')
+        assert b'Please re-enter your password correctly.' in rv.data
+        # Valid registration
         rv = self.register('by@me.com', 'Brandon', '12345', '12345')
         assert b'You were successfully registered' in rv.data
+        # Log user out
+        self.app.get('/logout/')
+        # Check that user was logged out successfully
+        with self.app:
+            self.app.get('/register/')
+            assert 'user_id' not in flask.session
+        # Attempt to register with a duplicate email address
+        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
+        assert b'A user already exists with this email address.' in rv.data
+
+    # Test form validation on login form
+    def test_login_errors(self):
+        # Register new account
+        rv = self.register('by@me.com', 'Brandon', '12345', '12345')
+        assert b'You were successfully registered' in rv.data
+        # Log user out
+        self.app.get('/logout/')
+        # Check that user was logged out successfully
+        with self.app:
+            self.app.get('/register/')
+            assert 'user_id' not in flask.session
+        # Attempt login with invalid email address
         rv = self.login('by', '12345')
         assert b'Please enter a valid email address.' in rv.data
+        # Attempt login with incorrect password
         rv = self.login('by@me.com', '567')
         assert b'This password is incorrect.' in rv.data
+        # Attempt login for a user that does not exist
         rv = self.login('random@me.com', '12345')
         assert b'There is no user with this email address.' in rv.data
+        # Successful login
         rv = self.login('by@me.com', '12345')
         assert b'You were successfully logged in' in rv.data
 
+    # Test that cookies are stored on registration and login
     def test_registration_and_login_cookies(self):
         with self.app:
-            self.app.get('/')
+            # Register account
             rv = self.register('by@me.com', 'Brandon', '12345', '12345')
             assert b'You were successfully registered' in rv.data
+            # Check that cookie is stored for user_id
             assert flask.session['user_id'] == 1
-            self.app.get('/logout/')
+            # Logout and check message flashed
+            rv = self.app.get('/logout/', follow_redirects=True)
+            assert b'You were successfully logged out' in rv.data
+            # Check that cookie is removed
             assert 'user_id' not in flask.session
+            # Log back in and check that cookie is stored
             rv = self.login('by@me.com', '12345')
             assert b'You were successfully logged in' in rv.data
             assert flask.session['user_id'] == 1
 
-    def test_login_next(self):
+    # Test 'Next' redirects after successful login
+    def test_login_next_url(self):
         with self.app:
             self.register('by@me.com', 'Brandon', '12345', '12345')
             self.app.get('/logout/', follow_redirects=True)
             assert 'user_id' not in flask.session
+            # Visit add_school page without being logged in and
+            # store redirect url
             rv = self.app.get('/school/add/')
             url = rv.headers['Location']
             rv = self.app.post(url, data=dict(
                 email='by@me.com',
                 password='12345'
             ), follow_redirects=True)
+            # After login, should redirect to add school page
             assert b'Add School' in rv.data
             assert flask.session['user_id'] == 1
 
     def test_add_school(self):
+        # Register account
         self.register('by@me.com', 'Brandon', '12345', '12345')
-        rv = self.login('by@me.com', '12345')
-        assert b'You were successfully logged in' in rv.data
         rv = self.app.get('/school/add/')
         assert b'Add School' in rv.data
         rv = self.app.post('/school/add/', data=dict(
