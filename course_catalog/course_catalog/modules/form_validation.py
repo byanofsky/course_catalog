@@ -32,6 +32,13 @@ def check_login(fields):
         errors['password'] = True
     return errors
 
+def check_add_course(fields):
+    errors = {}
+    for field in fields:
+        if fields[field] == '':
+            errors[field] = True
+    return errors
+
 def check_add_school(fields):
     errors = {}
     for field in fields:
