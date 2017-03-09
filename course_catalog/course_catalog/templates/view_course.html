@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block title %}{{ course.name }}{% endblock %}
+{% block body %}
+<h1>{{ course.name }}</h1>
+
+<ul>
+  <li>
+    URL:
+    {{ course.url }}
+  </li>
+  <li>
+    School:
+    {{ course.school.name }}
+  </li>
+  <li>
+    Category:
+    {{ course.category.name }}
+  </li>
+  <li>
+    Owner:
+    {{ course.user.name}}
+  </li>
+</ul>
+
+{% endblock %}

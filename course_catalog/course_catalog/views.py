@@ -199,7 +199,8 @@ def add_course():
 
 @app.route('/course/<int:id>/')
 def view_course(id):
-    return 'View single course with id ' + str(id)
+    course = Course.get_by_id(id)
+    return render_template('view_course.html', course=course)
 
 
 @app.route('/course/<int:id>/edit/')
