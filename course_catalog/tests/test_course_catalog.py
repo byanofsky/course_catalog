@@ -32,6 +32,22 @@ class CourseCatalogTestCase(unittest.TestCase):
             password=password
         ), follow_redirects=True)
 
+    def add_course(self, name, url, school, category):
+        return self.app.post('/course/add/', data=dict(
+            name=name,
+            url=url,
+            school=school,
+            category=category
+        ), follow_redirects=True)
+
+    def edit_course(self, course_id, name, url, school, category):
+        return self.app.post('/course/%s/edit/' % course_id, data=dict(
+            name=name,
+            url=url,
+            school=school,
+            category=category
+        ), follow_redirects=True)
+
     def add_school(self, name, url):
         return self.app.post('/school/add/', data=dict(
             name=name,
@@ -269,6 +285,85 @@ class CourseCatalogTestCase(unittest.TestCase):
         # rv = self.app.get(school_url + 'delete/', follow_redirects=True)
         # assert b'There is no school with that id' in rv.data
 
+    # Test add and edit course
+    def test_add_and_edit_course_form_errors(self):
+        # Register and add 3 schools and 3 categories
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        self.add_school('School 1', 'www.school1.com')
+        self.add_school('School 2', 'www.school2.com')
+        self.add_school('School 3', 'www.school3.com')
+        self.add_category('Category 1')
+        self.add_category('Category 2')
+        self.add_category('Category 3')
+
+        # Add course without school or category
+        rv = self.app.post('/course/add/', data=dict(
+            name='Course 1',
+            url='www.course1.com'
+        ), follow_redirects=True)
+        assert b'Please select a category.' in rv.data
+        assert b'Please select a school.' in rv.data
+
+        # Test form validations
+        rv = self.add_course('', 'www.course1.com', '2', '2')
+        assert b'Please enter a course name.' in rv.data
+        rv = self.add_course('Course 1', '', '2', '2')
+        assert b'Please enter a course URL.' in rv.data
+        # Create course
+        rv = self.add_course('Course 1', 'www.course1.com', '2', '2')
+        assert b'Course created' in rv.data
+        # Attempt to create course with same name
+        rv = self.add_course('Course 1', 'www.course1.com', '2', '1')
+        assert b'A course already exists with that name for this school.' in rv.data
+
+        #Create a second category for testing
+        self.add_course('Course 2', 'www.course2.com', '1', '1')
+
+        # Attempt edits
+        rv = self.edit_course(1, '', 'www.course1.com', '1', '1')
+        assert b'Please enter a course name.' in rv.data
+        rv = self.edit_course(1, 'Course Edited', '', '1', '1')
+        assert b'Please enter a course URL.' in rv.data
+        rv = self.edit_course(1, 'Course 2', 'www.course1.com', '1', '1')
+        assert b'A course already exists with that name for this school.' in rv.data
+
+        # Successfully edit category
+        rv = self.edit_course(1, 'Course Edited', 'www.course1.com', '1', '1')
+        assert b'Course edited' in rv.data
+
+    # Test adding course and cehcking on view_all_courses
+    def test_add_edit_and_delete_course(self):
+        # Register and add 3 schools and 3 categories
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        self.add_school('School 1', 'www.school1.com')
+        self.add_school('School 2', 'www.school2.com')
+        self.add_school('School 3', 'www.school3.com')
+        self.add_category('Category 1')
+        self.add_category('Category 2')
+        self.add_category('Category 3')
+        # Create course
+        rv = self.add_course('Course 1', 'www.course1.com', '2', '3')
+        assert b'Course created' in rv.data
+        assert b'Course 1' in rv.data
+        assert b'School 2' in rv.data
+        assert b'Category 3' in rv.data
+        # Check on view_all_courses page
+        rv = self.app.get('/courses/')
+        assert b'Course 1' in rv.data
+        # Edit course
+        rv = self.edit_course(1, 'Course Edited', 'www.courseedited.com', '3', '1')
+        assert b'School 3' in rv.data
+        assert b'Category 1' in rv.data
+        # Check on view_all_courses page
+        rv = self.app.get('/courses/')
+        assert b'Course Edited' in rv.data
+        assert b'www.courseedited.com' in rv.data
+        # Delete course
+        rv = self.app.post('/course/1/delete/', follow_redirects=True)
+        assert b'Course successfully deleted' in rv.data
+        # Check on view_all_courses page
+        rv = self.app.get('/courses/')
+        assert b'Course Edited' not in rv.data
 
 if __name__ == '__main__':
     unittest.main()
