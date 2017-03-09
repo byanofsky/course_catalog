@@ -243,9 +243,6 @@ def edit_course(id):
 @app.route('/course/<int:id>/delete/', methods=['GET', 'POST'])
 def delete_course(id):
         course = Course.get_or_404(id)
-        if course is None:
-            flash('There is no course with that id')
-            return redirect(url_for('view_all_courses'))
         if request.method == 'POST':
             course.delete()
             flash('Course successfully deleted')
@@ -325,9 +322,6 @@ def edit_school(id):
 # @user_authorized
 def delete_school(id):
     school = School.get_or_404(id)
-    if school is None:
-        flash('There is no school with that id')
-        return redirect(url_for('view_all_schools'))
     if request.method == 'POST':
         school.delete()
         flash('School successfully deleted')
@@ -401,9 +395,6 @@ def edit_category(id):
 @app.route('/category/<int:id>/delete/', methods=['POST', 'GET'])
 def delete_category(id):
     category = Category.get_or_404(id)
-    if category is None:
-        flash('There is no category with that id')
-        return redirect(url_for('view_all_categories'))
     if request.method == 'POST':
         category.delete()
         flash('Category successfully deleted')
