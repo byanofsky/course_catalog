@@ -8,8 +8,7 @@ import requests
 from course_catalog import app
 from models import User, Course, School, Category
 from modules.form_validation import check_registration, check_login, \
-    check_add_school, check_edit_school, check_add_category, \
-    check_add_course, check_edit_category
+    check_no_blanks
 
 
 bcrypt = Bcrypt(app)
@@ -173,7 +172,7 @@ def add_course():
             'school': request.form.get('school', ''),
             'category': request.form.get('category', '')
         }
-        errors = check_add_course(fields=fields)
+        errors = check_no_blanks(fields=fields)
         if not errors:
             # Check if course by same name exists witin school
             school_courses = School.get_by_id(fields['school']).courses
@@ -216,7 +215,7 @@ def edit_course(id):
                 'school': request.form.get('school', ''),
                 'category': request.form.get('category', '')
             }
-            errors = check_add_course(fields=fields)
+            errors = check_no_blanks(fields=fields)
             if not errors:
                 school_courses = School.get_by_id(fields['school']).courses
                 for school_course in school_courses:
@@ -271,7 +270,7 @@ def add_school():
             'name': request.form['name'],
             'url': request.form['url']
         }
-        errors = check_add_school(fields=fields)
+        errors = check_no_blanks(fields=fields)
         if not errors:
             if School.get_by_name(fields['name']):
                 errors['name_exists'] = True
@@ -302,7 +301,7 @@ def edit_school(id):
             'name': request.form['name'],
             'url': request.form['url']
         }
-        errors = check_edit_school(fields=fields)
+        errors = check_no_blanks(fields=fields)
         if not errors:
             if (School.get_by_name(fields['name']) and
                     School.get_by_name(fields['name']).id != school.id):
@@ -352,7 +351,7 @@ def add_category():
         fields = {
             'name': request.form['name']
         }
-        errors = check_add_category(fields=fields)
+        errors = check_no_blanks(fields=fields)
         if not errors:
             if Category.get_by_name(fields['name']):
                 errors['name_exists'] = True
@@ -381,7 +380,7 @@ def edit_category(id):
         fields = {
             'name': request.form['name']
         }
-        errors = check_edit_category(fields=fields)
+        errors = check_no_blanks(fields=fields)
         if not errors:
             if (Category.get_by_name(fields['name']) and
                     Category.get_by_name(fields['name']).id != category.id):
