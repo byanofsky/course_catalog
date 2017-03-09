@@ -44,6 +44,16 @@ class CourseCatalogTestCase(unittest.TestCase):
             url=url
         ), follow_redirects=True)
 
+    def add_category(self, name):
+        return self.app.post('/category/add/', data=dict(
+            name=name
+        ), follow_redirects=True)
+
+    def edit_category(self, school_id, name):
+        return self.app.post('/category/%s/edit/' % school_id, data=dict(
+            name=name
+        ), follow_redirects=True)
+
     # Test on a blank db to make sure starting clean
     def test_empty_db(self):
         rv = self.app.get('/')
@@ -179,71 +189,86 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.edit_school(1, 'Test School Edit', 'www.school.com')
         assert b'School edited' in rv.data
 
-    def test_add_school(self):
-        # Register account
+    # Test adding a school, check on view_all_schools, then delete
+    def test_add_edit_and_delete_school(self):
         self.register('by@me.com', 'Brandon', '12345', '12345')
-        rv = self.app.get('/school/add/')
-        assert b'Add School' in rv.data
-        rv = self.app.post('/school/add/', data=dict(
-            name='Brandon Test School',
-            url='www.brandonschool.com'
-        ), follow_redirects=True)
-        assert b'School created' in rv.data
-        assert b'Brandon Test School' in rv.data
-        assert b'www.brandonschool.com' in rv.data
-        assert b'Brandon' in rv.data
-        rv = self.app.get('/schools/')
-        assert b'Brandon Test School' in rv.data
-
-    def test_add_and_delete_school(self):
-        self.register('by@me.com', 'Brandon', '12345', '12345')
+        # Create school
         rv = self.add_school('Udacity', 'www.udacity.com')
         assert b'School created' in rv.data
         assert b'Udacity' in rv.data
         assert b'www.udacity.com' in rv.data
         assert b'Brandon' in rv.data
+        # Check on view_all_schools page
         rv = self.app.get('/schools/')
         assert b'Udacity' in rv.data
+        # Edit school
+        self.edit_school(1, 'Udacity Edited', 'www.udacity-edit.com')
+        # Check on view_all_schools page
+        rv = self.app.get('/schools/')
+        assert b'Udacity Edited' in rv.data
+        # Delete school
         rv = self.app.post('/school/1/delete/', follow_redirects=True)
         assert b'School successfully deleted' in rv.data
+        # Check on view_all_schools page
         rv = self.app.get('/schools/')
-        assert b'Udacity' not in rv.data
+        assert b'Udacity Edited' not in rv.data
         # TODO: check login won't work right now
         # rv = self.app.get(school_url + 'delete/', follow_redirects=True)
         # assert b'There is no school with that id' in rv.data
 
-    def test_categories(self):
-        self.register('by3@me.com', 'User Test', '12345', '12345')
-        rv = self.app.get('/category/add/')
-        assert b'Add Category' in rv.data
-        rv = self.app.post('/category/add/', data=dict(
-            name='',
-        ), follow_redirects=True)
-        assert b'Please enter a category name' in rv.data
-        rv = self.app.post('/category/add/', data=dict(
-            name='Test Category',
-        ), follow_redirects=True)
+    # Test add category and edit category form errors
+    def test_add_edit_category_form_errors(self):
+        # Register account
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        # Blank category name
+        rv = self.add_category('')
+        assert b'Please enter a category name.' in rv.data
+        # Create Category
+        rv = self.add_category('Test Category 1')
         assert b'Category created' in rv.data
-        assert b'Test Category' in rv.data
-        assert b'User Test' in rv.data
-        rv = self.app.post('/category/add/', data=dict(
-            name='Test Category 2',
-        ), follow_redirects=True)
-        assert b'Test Category 2' in rv.data
-        assert b'User Test' in rv.data
-        rv = self.app.post('/category/1/edit/', data=dict(
-            name='Test Category 1',
-        ), follow_redirects=True)
+        # Attempt to create category with same name
+        rv = self.add_category('Test Category 1')
+        assert b'A category already exists with that name.' in rv.data
+
+        #Create a second category for testing
+        self.add_category('Test Category 2')
+
+        # Attempt edits
+        rv = self.edit_category(1, '')
+        assert b'Please enter a category name.' in rv.data
+        rv = self.edit_category(1, 'Test Category 2')
+        assert b'A category already exists with that name.' in rv.data
+
+        # Successfully edit category
+        rv = self.edit_category(1, 'Test Category Edit')
         assert b'Category edited' in rv.data
-        assert b'Test Category 1' in rv.data
-        assert b'User Test' in rv.data
+
+    # Test adding a category, check on view_all_categories, then delete
+    def test_add_edit_and_delete_category(self):
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        # Create category
+        rv = self.add_category('Category Test')
+        assert b'Category created' in rv.data
+        assert b'Category Test' in rv.data
+        assert b'Brandon' in rv.data
+        # Check on view_all_categories page
         rv = self.app.get('/categories/')
-        assert b'Test Category 1' in rv.data
-        assert b'Test Category 2' in rv.data
+        assert b'Category Test' in rv.data
+        # Edit category
+        self.edit_category(1, 'Category Edited')
+        # Check on view_all_categories page
+        rv = self.app.get('/categories/')
+        assert b'Category Edited' in rv.data
+        # Delete category
         rv = self.app.post('/category/1/delete/', follow_redirects=True)
         assert b'Category successfully deleted' in rv.data
+        # Check on view_all_schools page
         rv = self.app.get('/categories/')
-        assert b'Test Category 1' not in rv.data
+        assert b'Category Edited' not in rv.data
+        # TODO: check login won't work right now
+        # rv = self.app.get(school_url + 'delete/', follow_redirects=True)
+        # assert b'There is no school with that id' in rv.data
+
 
 if __name__ == '__main__':
     unittest.main()
