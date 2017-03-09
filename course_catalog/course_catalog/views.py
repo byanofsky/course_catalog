@@ -203,9 +203,42 @@ def view_course(id):
     return render_template('view_course.html', course=course)
 
 
-@app.route('/course/<int:id>/edit/')
+@app.route('/course/<int:id>/edit/', methods=['GET', 'POST'])
 def edit_course(id):
-    return 'Edit course with id ' + str(id)
+        course = Course.get_by_id(id)
+        errors = None
+        categories = Category.get_all()
+        schools = School.get_all()
+        if request.method == 'POST':
+            fields = {
+                'name': request.form['name'],
+                'url': request.form['url'],
+                'school': request.form.get('school', ''),
+                'category': request.form.get('category', '')
+            }
+            errors = check_add_course(fields=fields)
+            if not errors:
+                school_courses = School.get_by_id(fields['school']).courses
+                for school_course in school_courses:
+                    if school_course.name == fields['name'] and school_course.id != course.id:
+                        errors['name_exists'] = True
+                if not errors:
+                    course.edit(
+                        name=fields['name'],
+                        url=fields['url'],
+                        school_id=fields['school'],
+                        category_id=fields['category']
+                    )
+                    flash('Course edited')
+                    return redirect(url_for('view_course', id=course.id))
+        else:
+            fields = {
+                'name': course.name,
+                'url': course.url,
+                'school': course.school.id,
+                'category': course.category.id
+            }
+        return render_template('edit_course.html', fields=fields, errors=errors, categories=categories, schools=schools)
 
 
 @app.route('/course/<int:id>/delete/')
