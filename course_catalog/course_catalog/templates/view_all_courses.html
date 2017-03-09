@@ -7,9 +7,11 @@
 <ul>
   {% for course in courses %}
   <li>
-    {{ course.name }}
-    {{ course.url }}
-    {{ course.id }}
+    <a href="{{ url_for('view_course', id=course.id) }}">{{ course.name }}</a><br>
+    URL: {{ course.url }}<br>
+    School ID: {{ course.school_id }}<br>
+    Category ID: {{ course.category_id }}<br>
+    Course ID: {{ course.id }}<br>
   </li>
   {% endfor %}
 </ul>

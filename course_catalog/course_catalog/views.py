@@ -43,7 +43,7 @@ def user_authorized(model):
 @app.route('/')
 @app.route('/courses/')
 def view_all_courses():
-    courses = None
+    courses = Course.get_all()
     return render_template('view_all_courses.html', courses=courses)
 
 
