@@ -6,9 +6,10 @@ from flask_bcrypt import Bcrypt
 import requests
 
 from course_catalog import app
-from models import User, School, Category
+from models import User, Course, School, Category
 from modules.form_validation import check_registration, check_login, \
-    check_add_school, check_edit_school, check_add_category, check_edit_category
+    check_add_school, check_edit_school, check_add_category, \
+    check_add_course, check_edit_category
 
 
 bcrypt = Bcrypt(app)
@@ -163,29 +164,32 @@ def add_course():
     errors = None
     fields = None
     user_id = session['user_id']
-    if method == 'POST':
+    categories = Category.get_all()
+    schools = School.get_all()
+    if request.method == 'POST':
         fields = {
             'name': request.form['name'],
             'url': request.form['url'],
-            'school': request.form['school'],
-            'category': request.form['category']
+            'school': request.form.get('school', ''),
+            'category': request.form.get('category', '')
         }
         errors = check_add_course(fields=fields)
         if not errors:
-            # TODO: check if course in school already
-            if Course.get_by_name(fields['name']):
-                errors['name_exists'] = True
-            else:
-                school = School.create(
+            # Check if course by same name exists witin school
+            school_courses = School.get_by_id(fields['school']).courses
+            for school_course in school_courses:
+                if school_course.name == fields['name']:
+                    errors['name_exists'] = True
+            if not errors:
+                course = Course.create(
                     name=fields['name'],
                     url=fields['url'],
+                    school_id=fields['school'],
+                    category_id=fields['category'],
                     user_id=user_id
                 )
-                flash('School created')
-                return redirect(url_for('view_school', id=school.id))
-    else:
-        categories = Category.get_all()
-        schools = School.get_all()
+                flash('Course created')
+                return redirect(url_for('view_course', id=course.id))
     return render_template('add_course.html',
                            fields=fields,
                            categories=categories,
@@ -193,19 +197,19 @@ def add_course():
                            errors=errors)
 
 
-@app.route('/course/<int:course_id>/')
-def view_course(course_id):
-    return 'View single course with id ' + str(course_id)
+@app.route('/course/<int:id>/')
+def view_course(id):
+    return 'View single course with id ' + str(id)
 
 
-@app.route('/course/<int:course_id>/edit/')
-def edit_course(course_id):
-    return 'Edit course with id ' + str(course_id)
+@app.route('/course/<int:id>/edit/')
+def edit_course(id):
+    return 'Edit course with id ' + str(id)
 
 
-@app.route('/course/<int:course_id>/delete/')
-def delete_course(course_id):
-    return 'Delete course with id ' + str(course_id)
+@app.route('/course/<int:id>/delete/')
+def delete_course(id):
+    return 'Delete course with id ' + str(id)
 
 
 @app.route('/schools/')
