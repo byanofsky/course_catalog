@@ -32,6 +32,18 @@ class CourseCatalogTestCase(unittest.TestCase):
             password=password
         ), follow_redirects=True)
 
+    def add_school(self, name, url):
+        return self.app.post('/school/add/', data=dict(
+            name=name,
+            url=url
+        ), follow_redirects=True)
+
+    def edit_school(self, school_id, name, url):
+        return self.app.post('/school/%s/edit/' % school_id, data=dict(
+            name=name,
+            url=url
+        ), follow_redirects=True)
+
     # Test on a blank db to make sure starting clean
     def test_empty_db(self):
         rv = self.app.get('/')
@@ -128,6 +140,45 @@ class CourseCatalogTestCase(unittest.TestCase):
             assert b'Add School' in rv.data
             assert flask.session['user_id'] == 1
 
+    # Test add school and edit school form errors
+    def test_add_edit_school_form_errors(self):
+        # Register account
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        # Test with both fields blank
+        rv = self.add_school('', '')
+        assert b'Please enter a school name.' in rv.data
+        assert b'Please enter a school url.' in rv.data
+        # Blank school name
+        rv = self.add_school('', 'www.school.com')
+        assert b'Please enter a school name.' in rv.data
+        # Blank url
+        rv = self.add_school('Test School 1', '')
+        assert b'Please enter a school url.' in rv.data
+        # Create school
+        rv = self.add_school('Test School 1', 'www.school.com')
+        assert b'School created' in rv.data
+        # Attempt to create school with same name
+        rv = self.add_school('Test School 1', 'www.school2.com')
+        assert b'A school already exists with that name.' in rv.data
+
+        #Create a second school for testing
+        self.add_school('Test School 2', 'www.school2.com')
+
+        # Attempt edits
+        rv = self.edit_school(1, '', '')
+        assert b'Please enter a school name.' in rv.data
+        assert b'Please enter a school url.' in rv.data
+        rv = self.edit_school(1, 'Test School Edit', '')
+        assert b'Please enter a school url.' in rv.data
+        rv = self.edit_school(1, '', 'www.testschool.com')
+        assert b'Please enter a school name.' in rv.data
+        rv = self.edit_school(1, 'Test School 2', 'www.testschool.com')
+        assert b'A school already exists with that name.' in rv.data
+
+        # Successfully edit school
+        rv = self.edit_school(1, 'Test School Edit', 'www.school.com')
+        assert b'School edited' in rv.data
+
     def test_add_school(self):
         # Register account
         self.register('by@me.com', 'Brandon', '12345', '12345')
@@ -145,23 +196,18 @@ class CourseCatalogTestCase(unittest.TestCase):
         assert b'Brandon Test School' in rv.data
 
     def test_add_and_delete_school(self):
-        self.register('by2@me.com', 'Brandon', '12345', '12345')
-        rv = self.login('by2@me.com', '12345')
-        assert b'You were successfully logged in' in rv.data
-        rv = self.app.get('/school/add/')
-        assert b'Add School' in rv.data
-        rv = self.app.post('/school/add/', data=dict(
-            name='Udacity',
-            url='www.udacity.com'
-        ))
-        school_url = rv.headers['Location']
-        rv = self.app.get(school_url)
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        rv = self.add_school('Udacity', 'www.udacity.com')
         assert b'School created' in rv.data
         assert b'Udacity' in rv.data
         assert b'www.udacity.com' in rv.data
         assert b'Brandon' in rv.data
-        rv = self.app.post(school_url + 'delete/', follow_redirects=True)
+        rv = self.app.get('/schools/')
+        assert b'Udacity' in rv.data
+        rv = self.app.post('/school/1/delete/', follow_redirects=True)
         assert b'School successfully deleted' in rv.data
+        rv = self.app.get('/schools/')
+        assert b'Udacity' not in rv.data
         # TODO: check login won't work right now
         # rv = self.app.get(school_url + 'delete/', follow_redirects=True)
         # assert b'There is no school with that id' in rv.data
