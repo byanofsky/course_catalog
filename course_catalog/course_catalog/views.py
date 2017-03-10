@@ -1,7 +1,8 @@
 import random, string
 from functools import wraps
 
-from flask import render_template, session, request, make_response, flash, redirect, url_for
+from flask import render_template, session, request, make_response, flash, \
+    redirect, url_for, abort
 from flask_bcrypt import Bcrypt
 import requests
 
@@ -30,10 +31,10 @@ def user_authorized(model):
         @wraps(f)
         def decorated_function(id, *args, **kwargs):
             user_id = session.get('user_id')
-            item = model.query.filter_by(id=id).first()
-            if user_id is None or user_id != item.user_id:
-                flash('You are not authorized to edit this')
-                return redirect(url_for('login', next=request.url))
+            item = model.query.get_or_404(id)
+            # item = model.query.filter_by(id=id).first()
+            if user_id != item.user_id:
+                abort(403)
             return f(id, *args, **kwargs)
         return decorated_function
     return decorator
@@ -203,6 +204,8 @@ def view_course(id):
 
 
 @app.route('/course/<int:id>/edit/', methods=['GET', 'POST'])
+@login_required
+@user_authorized(Course)
 def edit_course(id):
         course = Course.get_or_404(id)
         errors = None
@@ -241,6 +244,8 @@ def edit_course(id):
 
 
 @app.route('/course/<int:id>/delete/', methods=['GET', 'POST'])
+@login_required
+@user_authorized(Course)
 def delete_course(id):
         course = Course.get_or_404(id)
         if request.method == 'POST':
@@ -289,6 +294,7 @@ def view_school(id):
 
 
 @app.route('/school/<int:id>/edit/', methods=['GET', 'POST'])
+@login_required
 @user_authorized(School)
 def edit_school(id):
     school = School.get_or_404(id)
@@ -319,7 +325,8 @@ def edit_school(id):
 
 
 @app.route('/school/<int:id>/delete/', methods=['GET', 'POST'])
-# @user_authorized
+@login_required
+@user_authorized(School)
 def delete_school(id):
     school = School.get_or_404(id)
     if request.method == 'POST':
@@ -366,6 +373,7 @@ def view_category(id):
 
 
 @app.route('/category/<int:id>/edit/', methods=['GET', 'POST'])
+@login_required
 @user_authorized(Category)
 def edit_category(id):
     category = Category.get_or_404(id)
@@ -393,6 +401,8 @@ def edit_category(id):
 
 
 @app.route('/category/<int:id>/delete/', methods=['POST', 'GET'])
+@login_required
+@user_authorized(Category)
 def delete_category(id):
     category = Category.get_or_404(id)
     if request.method == 'POST':
