@@ -393,5 +393,26 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.app.get('/category/1/delete/', follow_redirects=True)
         assert b'Please log in to continue' in rv.data
 
+    def test_user_authorized(self):
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        self.add_school('School 1', 'www.school1.com')
+        self.add_category('Category 1')
+        self.add_course('Course 1', 'www.course1.com', '1', '1')
+        self.app.get('/logout/')
+
+        self.register('user2@me.com', 'User2', '12345', '12345')
+        rv = self.app.get('/course/1/edit/', follow_redirects=True)
+        assert rv.status_code == 403
+        rv = self.app.get('/course/1/delete/', follow_redirects=True)
+        assert rv.status_code == 403
+        rv = self.app.get('/school/1/edit/', follow_redirects=True)
+        assert rv.status_code == 403
+        rv = self.app.get('/school/1/delete/', follow_redirects=True)
+        assert rv.status_code == 403
+        rv = self.app.get('/category/1/edit/', follow_redirects=True)
+        assert rv.status_code == 403
+        rv = self.app.get('/category/1/delete/', follow_redirects=True)
+        assert rv.status_code == 403
+
 if __name__ == '__main__':
     unittest.main()
