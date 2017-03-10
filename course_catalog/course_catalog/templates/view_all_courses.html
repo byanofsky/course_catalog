@@ -3,6 +3,10 @@
 {% block body %}
 <h1>Courses</h1>
 
+{% if session['user_id'] %}
+  <a href="{{ url_for('add_course') }}">Add Course</a>
+{% endif %}
+
 {% if courses %}
 <ul>
   {% for course in courses %}
