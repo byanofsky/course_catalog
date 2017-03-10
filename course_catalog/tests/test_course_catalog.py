@@ -414,5 +414,22 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.app.get('/category/1/delete/', follow_redirects=True)
         assert rv.status_code == 403
 
+    def test_content_for_loggedin_only(self):
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        rv = self.app.get('/courses/')
+        assert b'Add Course' in rv.data
+        rv = self.app.get('/schools/')
+        assert b'Add School' in rv.data
+        rv = self.app.get('/categories/')
+        assert b'Add Category' in rv.data
+
+        self.app.get('/logout/')
+        rv = self.app.get('/courses/')
+        assert b'Add Course' not in rv.data
+        rv = self.app.get('/schools/')
+        assert b'Add School' not in rv.data
+        rv = self.app.get('/categories/')
+        assert b'Add Category' not in rv.data
+
 if __name__ == '__main__':
     unittest.main()
