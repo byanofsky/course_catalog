@@ -365,5 +365,33 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.app.get('/courses/')
         assert b'Course Edited' not in rv.data
 
+    # Test Login required
+    def test_login_required(self):
+        rv = self.app.get('/course/add/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+        rv = self.app.get('/school/add/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+        rv = self.app.get('/category/add/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+
+        self.register('by@me.com', 'Brandon', '12345', '12345')
+        self.add_school('School 1', 'www.school1.com')
+        self.add_category('Category 1')
+        self.add_course('Course 1', 'www.course1.com', '1', '1')
+        self.app.get('/logout/')
+
+        rv = self.app.get('/course/1/edit/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+        rv = self.app.get('/course/1/delete/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+        rv = self.app.get('/school/1/edit/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+        rv = self.app.get('/school/1/delete/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+        rv = self.app.get('/category/1/edit/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+        rv = self.app.get('/category/1/delete/', follow_redirects=True)
+        assert b'Please log in to continue' in rv.data
+
 if __name__ == '__main__':
     unittest.main()
