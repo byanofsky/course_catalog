@@ -423,6 +423,19 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.app.get('/categories/')
         assert b'Add Category' in rv.data
 
+        self.add_school('School 1', 'www.school1.com')
+        self.add_category('Category 1')
+        self.add_course('Course 1', 'www.course1.com', '1', '1')
+        rv = self.app.get('/course/1/')
+        assert b'Edit' in rv.data
+        assert b'Delete' in rv.data
+        rv = self.app.get('/school/1/')
+        assert b'Edit' in rv.data
+        assert b'Delete' in rv.data
+        rv = self.app.get('/category/1/')
+        assert b'Edit' in rv.data
+        assert b'Delete' in rv.data
+
         self.app.get('/logout/')
         rv = self.app.get('/courses/')
         assert b'Add Course' not in rv.data
@@ -430,6 +443,15 @@ class CourseCatalogTestCase(unittest.TestCase):
         assert b'Add School' not in rv.data
         rv = self.app.get('/categories/')
         assert b'Add Category' not in rv.data
+        rv = self.app.get('/course/1/')
+        assert b'Edit' not in rv.data
+        assert b'Delete' not in rv.data
+        rv = self.app.get('/school/1/')
+        assert b'Edit' not in rv.data
+        assert b'Delete' not in rv.data
+        rv = self.app.get('/category/1/')
+        assert b'Edit' not in rv.data
+        assert b'Delete' not in rv.data
 
 if __name__ == '__main__':
     unittest.main()
