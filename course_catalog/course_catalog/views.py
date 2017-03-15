@@ -2,7 +2,7 @@ import random, string
 from functools import wraps
 
 from flask import render_template, session, request, make_response, flash, \
-    redirect, url_for, abort
+    redirect, url_for, abort, json
 from flask_bcrypt import Bcrypt
 import requests
 
@@ -94,17 +94,22 @@ def login():
                 redirect_url = request.args.get('next', url_for('view_all_courses'))
                 return redirect(redirect_url)
     # Creates and stores an anti-forgery token
+    return render_template('login.html', fields=fields, errors=errors)
+
+@app.route('/fblogin/')
+def fblogin():
+    # Creates and stores an anti-forgery token
     state = ''.join(random.choice(string.ascii_uppercase + string.digits)
                     for x in xrange(32))
     session['state'] = state
-    return render_template('login.html', STATE=state, fields=fields, errors=errors)
+    return render_template('fblogin.html', STATE=state)
 
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
-    # TODO: this needs testing if user can't log in
-    # if 1 == 1:
-    if request.args.get('state') != session['state']:
+    # Check that state exists in args and session, and that they match
+    if not (request.args.get('state') and session.get('state')) or \
+            request.args.get('state') != session.get('state'):
         response = make_response(json.dumps('Invalid state parameter'))
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -126,15 +131,29 @@ def fbconnect():
     r = requests.get(url)
     data = r.json()
 
-    # Store user info in session
-    session['provider'] = 'facebook'
-    session['email'] = data['email']
-    session['facebook_id'] = data['id']
-    session['name'] = data['name']
-    session['token'] = token
+    email = data['email']
+    name = data['name']
+    facebook_id = data['id']
 
-    print "User logged in as %s" % session['name']
-    return "You are now logged in as %s" % session['name']
+    # Check if user exists. If it does, stores to user. Otherwise, create new
+    # user in database.
+    user = User.get_by_email(email)
+    if not user :
+        # If user does not exist, create entry in database
+        # First create a random password
+        pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                        for x in xrange(32))
+        user = User.create(
+            name=name,
+            email=email,
+            pwhash=bcrypt.generate_password_hash(pw, 10)
+        )
+
+    session['user_id'] = user.id
+    session['provider'] = 'facebook'
+
+    print "User logged in as %s" % user.name
+    return "You are now logged in as %s" % user.name
 
 
 @app.route('/fbdisconnect/')
