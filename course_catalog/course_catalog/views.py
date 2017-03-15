@@ -171,7 +171,6 @@ def fbdisconnect():
         url = 'https://graph.facebook.com/v2.8/%s/permissions?%s' \
               % (facebook_id, token)
         r = requests.delete(url)
-        print r
 
         # Remove facebook info from user session
         session.pop('token', None)
@@ -184,7 +183,6 @@ def fbdisconnect():
 def logout():
     session.pop('user_id', None)
     provider = session.get('provider')
-    print 'Provider %s' % provider
     if provider == 'facebook':
         fbdisconnect()
     flash('You were successfully logged out')
