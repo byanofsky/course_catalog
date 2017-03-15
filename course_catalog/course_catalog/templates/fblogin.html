@@ -21,10 +21,10 @@
     }
   }
 
-  function facebookLogin() {
-    FB.login(function(response) {
-      statusChangeCallback(response)
-    }, {scope: 'public_profile,email'});
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
   }
 
   window.fbAsyncInit = function() {
@@ -82,9 +82,8 @@
 {% block title %}Login{% endblock %}
 {% block body %}
 
-<fb:login-button scope="public_profile,email" onlogin="facebookLogin;">
+<fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
 </fb:login-button>
-<!-- <a onclick="facebook_login()">Log in via Facebook</a> -->
 
 <div id="status"></div>
 {% endblock %}
