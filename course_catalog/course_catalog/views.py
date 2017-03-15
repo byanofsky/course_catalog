@@ -44,6 +44,7 @@ def user_authorized(model):
 @app.route('/courses/')
 def view_all_courses():
     courses = Course.get_all()
+    print session
     return render_template('view_all_courses.html', courses=courses)
 
 
@@ -151,6 +152,8 @@ def fbconnect():
 
     session['user_id'] = user.id
     session['provider'] = 'facebook'
+    session['token'] = token
+    session['facebook_id'] = facebook_id
 
     print "User logged in as %s" % user.name
     return "You are now logged in as %s" % user.name
@@ -160,19 +163,30 @@ def fbconnect():
 def fbdisconnect():
     # Check if user is logged in with facebook
     if session.get('provider') == 'facebook':
+        # Get facebook access token and facebook user id
         token = session['token']
         facebook_id = session['facebook_id']
 
+        # Make api call to Facebook to revoke permissions
         url = 'https://graph.facebook.com/v2.8/%s/permissions?%s' \
               % (facebook_id, token)
         r = requests.delete(url)
         print r
+
+        # Remove facebook info from user session
+        session.pop('token', None)
+        session.pop('facebook_id', None)
+        session.pop('provider', None)
     return 'Disconnected'
 
 
 @app.route('/logout/')
 def logout():
     session.pop('user_id', None)
+    provider = session.get('provider')
+    print 'Provider %s' % provider
+    if provider == 'facebook':
+        fbdisconnect()
     flash('You were successfully logged out')
     return redirect(url_for('login'))
 
