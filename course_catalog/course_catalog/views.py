@@ -5,6 +5,7 @@ from flask import render_template, session, request, make_response, flash, \
     redirect, url_for, abort, json
 from flask_bcrypt import Bcrypt
 import requests
+from oauth2client import client, crypt
 
 from course_catalog import app
 from models import User, Course, School, Category
@@ -179,12 +180,101 @@ def fbdisconnect():
     return 'Disconnected'
 
 
+@app.route('/googlelogin/')
+def googlelogin():
+    # Creates and stores an anti-forgery token
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    session['state'] = state
+    return render_template('googlelogin.html', STATE=state)
+
+@app.route('/googleconnect', methods=['POST'])
+def googleconnect():
+    print 'Calling google connect'
+
+    # If this request does not have `X-Requested-With` header, this could be a CSRF
+    # if not request.headers.get('X-Requested-With'):
+    #     abort(403)
+
+    # Check that state exists in args and session, and that they match
+    if not (request.args.get('state') and session.get('state')) or \
+            request.args.get('state') != session.get('state'):
+        response = make_response(json.dumps('Invalid state parameter'))
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    token = request.form['idtoken']
+
+    try:
+        idinfo = client.verify_id_token(token, app.config['GOOGLE_CLIENT_ID'])
+
+        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+            raise crypt.AppIdentityError("Wrong issuer.")
+
+    except crypt.AppIdentityError:
+        response = make_response(json.dumps('Invalid ID Token'))
+        response.headers['Content-Type'] = 'application/json'
+
+    email = idinfo['email']
+    name = idinfo['name']
+    google_id = idinfo['sub']
+
+    # Check if user exists. If it does, stores to user. Otherwise, create new
+    # user in database.
+    user = User.get_by_email(email)
+    if not user :
+        # If user does not exist, create entry in database
+        # First create a random password
+        pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                        for x in xrange(32))
+        user = User.create(
+            name=name,
+            email=email,
+            pwhash=bcrypt.generate_password_hash(pw, 10)
+        )
+    #
+    session['user_id'] = user.id
+    session['provider'] = 'google'
+    session['token'] = token
+    session['google_id'] = google_id
+    #
+    print "User logged in as %s" % user.name
+    return "You are now logged in as %s" % user.name
+
+@app.route('/googledisconnect/')
+def googledisconnect():
+    # Check if user is logged in with google
+    print session
+    if session.get('provider') == 'google':
+        # Get google access token and google user id
+        token = session['token']
+        google_id = session['google_id']
+
+        # Make api call to Google to revoke permissions
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
+              % token
+        # r = requests.get(url)
+        print url
+
+        # print r
+
+        # Remove google info from user session
+        # session.pop('token', None)
+        # session.pop('google_id', None)
+        # session.pop('provider', None)
+    return 'Disconnected'
+
+
+
+
 @app.route('/logout/')
 def logout():
     session.pop('user_id', None)
     provider = session.get('provider')
     if provider == 'facebook':
         fbdisconnect()
+    if provider == 'google':
+        googledisconnect()
     flash('You were successfully logged out')
     return redirect(url_for('login'))
 
