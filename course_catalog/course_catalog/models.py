@@ -56,6 +56,9 @@ class User(Base):
     name = Column(String(50))
     email = Column(String(120), unique=True, nullable=False)
     pwhash = Column(Text)
+    facebook_id = Column(Text)
+    google_id = Column(Text)
+    github_id = Column(Text)
 
     courses = relationship("Course", back_populates="user")
 
@@ -63,10 +66,14 @@ class User(Base):
 
     categories = relationship("Category", back_populates="user")
 
-    def __init__(self, name, email, pwhash):
+    def __init__(self, name, email, pwhash,
+                 facebook_id=None, google_id=None, github_id=None):
         self.name = name
         self.email = email
         self.pwhash = pwhash
+        self.facebook_id = facebook_id
+        self.google_id = google_id
+        self.github_id = github_id
 
     def __repr__(self):
         return '<User %r>' % (self.name)
@@ -74,6 +81,17 @@ class User(Base):
     @classmethod
     def get_by_email(cls, email):
         return cls.query.filter_by(email=email).first()
+
+    @classmethod
+    def get_by_providerid(cls, id, provider):
+        if provider == 'facebook':
+            return cls.query.filter_by(facebook_id=id).first()
+        elif provider == 'google':
+            return cls.query.filter_by(google_id=id).first()
+        elif provider == 'github':
+            return cls.query.filter_by(github_id=id).first()
+        else:
+            return None
 
 
 class Course(Base):
