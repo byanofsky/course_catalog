@@ -258,10 +258,68 @@ def googledisconnect():
     return 'Disconnected'
 
 
+@app.route('/githublogin/')
+def githublogin():
+    # Creates and stores an anti-forgery token
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    session['state'] = state
+    return render_template('githublogin.html', STATE=state)
 
+@app.route('/githubconnect/')
+def githubconnect():
+    # Store state
+    state = request.args.get('state')
+    # Check that state exists in args and session, and that they match
+    if not (state and session.get('state')) or \
+            state != session.get('state'):
+        print 'States do not match'
+        abort(403)
+    # Store code that GitHub returns
+    code = request.args.get('code')
+
+    # Exchange code for access token
+    url = 'https://github.com/login/oauth/access_token'
+    payload = {
+        'client_id': app.config['GITHUB_CLIENT_ID'],
+        'client_secret': app.config['GITHUB_CLIENT_SECRET'],
+        'code': code,
+        'state': state
+    }
+    r = requests.post(url, params=payload)
+    # Store access token
+    access_token = r.text.split('&')[0].split('=')[1]
+
+    # Make request to API for email
+    url = 'https://api.github.com/user/emails'
+    headers = {'Authorization': 'token %s' % access_token}
+    r = requests.get(url, headers=headers)
+    # Store user info
+    email = r.json()[0]['email']
+
+    # Make request to API for user info
+    url = 'https://api.github.com/user'
+    headers = {'Authorization': 'token %s' % access_token}
+    r = requests.get(url, headers=headers)
+    data = r.json()
+
+    # Get name and login details
+    name = data['name']
+    login = data['login']
+    # If name is 'None', then use login
+    name = name or login
+    print name
+
+    # session['user_id'] = user.id
+    session['provider'] = 'github'
+    session['token'] = access_token
+    session['github_id'] = data['id']
+    print session
+    return 'success'
 
 @app.route('/logout/')
 def logout():
+    print 'Before logout:'
     print session
     session.pop('user_id', None)
     provider = session.get('provider')
@@ -269,6 +327,8 @@ def logout():
         fbdisconnect()
     if provider == 'google':
         googledisconnect()
+    if provider == 'github':
+        githubdisconnect()
     flash('You were successfully logged out')
     return redirect(url_for('login'))
 
