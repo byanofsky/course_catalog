@@ -190,29 +190,22 @@ def googlelogin():
 
 @app.route('/googleconnect', methods=['POST'])
 def googleconnect():
-    print 'Calling google connect'
-
-    # If this request does not have `X-Requested-With` header, this could be a CSRF
-    # if not request.headers.get('X-Requested-With'):
-    #     abort(403)
-
     # Check that state exists in args and session, and that they match
     if not (request.args.get('state') and session.get('state')) or \
             request.args.get('state') != session.get('state'):
-        response = make_response(json.dumps('Invalid state parameter'))
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        abort(403)
     token = request.form['idtoken']
 
+    # Check that id token is valid
     try:
         idinfo = client.verify_id_token(token, app.config['GOOGLE_CLIENT_ID'])
 
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
             raise crypt.AppIdentityError("Wrong issuer.")
-
+    # If ID token is no valid, return 403
     except crypt.AppIdentityError:
-        response = make_response(json.dumps('Invalid ID Token'))
-        response.headers['Content-Type'] = 'application/json'
+        print 'Invalid ID Token'
+        abort(403)
 
     email = idinfo['email']
     name = idinfo['name']
@@ -269,6 +262,7 @@ def googledisconnect():
 
 @app.route('/logout/')
 def logout():
+    print session
     session.pop('user_id', None)
     provider = session.get('provider')
     if provider == 'facebook':

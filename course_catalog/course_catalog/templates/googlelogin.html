@@ -12,39 +12,17 @@
     xhr.open('POST', '{{ url_for("googleconnect") }}?state={{ STATE }}');
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
     xhr.onload = function() {
-      console.log('Signed in as: ' + xhr.responseText);
+      console.log(xhr.status);
+      if (xhr.status === 200) {
+        $('#result').html('Login Successful!<br>' + xhr.responseText + '<br>Redirecting...');
+        setTimeout(function() {
+          window.location.href = "{{ url_for('view_all_courses') }}";
+        }, 1000);
+      } else {
+        $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+      }
     };
     xhr.send('idtoken=' + id_token);
-
-    // if (authResult['code']) {
-    //   console.log(authResult);
-    //   // Send the code to the server
-    //   $.ajax({
-    //     type: 'POST',
-    //     url: 'http://localhost:5000/googleconnect?state={{ STATE }}',
-    //     // Always include an `X-Requested-With` header in every AJAX request,
-    //     // to protect against CSRF attacks.
-    //     headers: {
-    //       'X-Requested-With': 'XMLHttpRequest'
-    //     },
-    //     contentType: 'application/octet-stream; charset=utf-8',
-    //     success: function(result) {
-    //       // Handle or verify the server response if necessary.
-    //       if (result) {
-    //         $('#result').html('Login Successful!<br>' + result + '<br>Redirecting...');
-    //         // setTimeout(function() {
-    //         //   window.location.href = "{{ url_for('view_all_courses') }}";
-    //         // }, 4000);
-    //       } else {
-    //         $('#result').html('Failed to make a server-side call. Check your configuration and console.');
-    //       }
-    //     },
-    //     processData: false,
-    //     data: authResult['code']
-    //   });
-    // } else {
-    //   // There was an error.
-    // }
   }
   </script>
 
