@@ -266,6 +266,7 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.add_category('Category Test')
         assert b'Category created' in rv.data
         assert b'Category Test' in rv.data
+        assert b'No courses in this category.' in rv.data
         # Check on view_all_categories page
         rv = self.app.get('/categories/')
         assert b'Category Test' in rv.data
