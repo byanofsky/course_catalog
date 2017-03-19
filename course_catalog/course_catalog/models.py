@@ -27,6 +27,12 @@ def get_by_id(cls, id):
 def get_or_404(cls, id):
     return cls.query.get_or_404(id)
 
+def get_n(cls, n, desc=False):
+    if desc:
+        return cls.query.order_by(cls.id.desc()).limit(n).all()
+    else:
+        return cls.query.order_by(cls.id).limit(n).all()
+
 def get_all(cls):
     return cls.query.all()
 
@@ -45,6 +51,7 @@ def edit(self, **kw):
 Base.create = classmethod(create)
 Base.get_by_id = classmethod(get_by_id)
 Base.get_or_404 = classmethod(get_or_404)
+Base.get_n = classmethod(get_n)
 Base.get_all = classmethod(get_all)
 Base.delete = delete
 Base.edit = edit
