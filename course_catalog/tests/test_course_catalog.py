@@ -356,7 +356,6 @@ class CourseCatalogTestCase(unittest.TestCase):
         # Check on view_all_courses page
         rv = self.app.get('/courses/')
         assert b'Course Edited' in rv.data
-        assert b'www.courseedited.com' in rv.data
         # Delete course
         rv = self.app.post('/course/1/delete/', follow_redirects=True)
         assert b'Course successfully deleted' in rv.data

@@ -12,8 +12,7 @@
   {% for school in schools %}
   <li>
     <a href="{{ url_for('view_school', id=school.id) }}">{{ school.name }}</a>
-    {{ school.url }}
-    {{ school.id }}
+    {{ school.courses|length }}
   </li>
   {% endfor %}
 </ul>
