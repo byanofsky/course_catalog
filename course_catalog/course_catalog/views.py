@@ -112,10 +112,10 @@ def fbconnect():
     # Check that state exists in args and session, and that they match
     if not (request.args.get('state') and session.get('state')) or \
             request.args.get('state') != session.get('state'):
-        response = make_response(json.dumps('Invalid state parameter'))
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    short_lived_token = request.data
+        print 'Invalid state parameter'
+        abort(403)
+    short_lived_token = request.form['access_token']
+    # short_lived_token = '12345'
 
     # Exchange client token for server-side token
     url = 'https://graph.facebook.com/oauth/access_token'
@@ -126,21 +126,27 @@ def fbconnect():
         'fb_exchange_token': short_lived_token
     }
     r = requests.get(url, params=payload)
-    token = r.text.split("&")[0]
+    access_token = r.text.split("&")[0].split("=")[1]
 
     # Get user info from api
-    url = 'https://graph.facebook.com/v2.8/me?%s&fields=name,id,email' % token
-    r = requests.get(url)
+    url = 'https://graph.facebook.com/v2.8/me'
+    payload = {
+        'access_token': access_token,
+        'fields': 'name,id,email'
+    }
+    r = requests.get(url, params=payload)
     data = r.json()
 
+    # Store user info for easy access
     email = data['email']
     name = data['name']
     facebook_id = data['id']
 
-    # Check if user exists. If it does, stores to user. Otherwise, create new
-    # user in database.
-    user = User.get_by_email(email)
-    if not user :
+    # Check if user exists by provider id or email
+    user = User.get_by_providerid(facebook_id, 'facebook') or \
+        User.get_by_email(email)
+    # If there is no user, create a user
+    if not user:
         # If user does not exist, create entry in database
         # First create a random password
         pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
@@ -148,12 +154,17 @@ def fbconnect():
         user = User.create(
             name=name,
             email=email,
-            pwhash=bcrypt.generate_password_hash(pw, 10)
+            pwhash=bcrypt.generate_password_hash(pw, 10),
+            facebook_id=facebook_id
         )
+    else:
+        # User exists, so check it has facebook_id assigned.
+        # If does not exist, assign it
+        if not user.facebook_id:
+            user.edit(facebook_id=facebook_id)
 
     session['user_id'] = user.id
-    session['provider'] = 'facebook'
-    session['token'] = token
+    session['fb_token'] = access_token
     session['facebook_id'] = facebook_id
 
     print "User logged in as %s" % user.name
@@ -162,23 +173,25 @@ def fbconnect():
 
 @app.route('/fbdisconnect/')
 def fbdisconnect():
-    # Check if user is logged in with facebook
-    if session.get('provider') == 'facebook':
-        # Get facebook access token and facebook user id
-        token = session['token']
-        facebook_id = session['facebook_id']
+    # Get facebook access token and facebook user id
+    token = session['fb_token']
+    facebook_id = session['facebook_id']
 
-        # Make api call to Facebook to revoke permissions
-        url = 'https://graph.facebook.com/v2.8/%s/permissions?%s' \
-              % (facebook_id, token)
-        r = requests.delete(url)
+    # Make api call to Facebook to revoke permissions
+    url = 'https://graph.facebook.com/v2.8/%s/permissions' % facebook_id
+    payload = {
+        'access_token': token
+    }
+    r = requests.delete(url, params=payload)
 
-        # Remove facebook info from user session
-        session.pop('token', None)
-        session.pop('facebook_id', None)
-        session.pop('provider', None)
+    if r.status_code != requests.codes.ok:
+        print 'Issue revoking facebook permissions'
+        abort(400)
+
+    # Remove facebook info from user session
+    session.pop('fb_token', None)
+    session.pop('facebook_id', None)
     return 'Disconnected'
-
 
 @app.route('/googlelogin/')
 def googlelogin():
