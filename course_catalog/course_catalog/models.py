@@ -40,12 +40,22 @@ def edit(self, **kw):
     db_session.add(self)
     db_session.commit()
 
+# Creates a mapping of ids to names for quick reference
+def map_id_2_name(cls):
+    id_2_name = {}
+    all_items = cls.get_all()
+    for item in all_items:
+        assert item.id and item.name
+        id_2_name[item.id] = item.name
+    return id_2_name
+
 
 # Assign helper methods to Base class model
 Base.create = classmethod(create)
 Base.get_by_id = classmethod(get_by_id)
 Base.get_or_404 = classmethod(get_or_404)
 Base.get_all = classmethod(get_all)
+Base.map_id_2_name = classmethod(map_id_2_name)
 Base.delete = delete
 Base.edit = edit
 
