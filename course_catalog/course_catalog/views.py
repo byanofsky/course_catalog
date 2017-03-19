@@ -384,8 +384,14 @@ def add_course():
 @app.route('/courses/')
 def view_all_courses():
     courses = Course.get_all()
-    print session
-    return render_template('view_all_courses.html', courses=courses)
+    category_id_2_name = Category.map_id_2_name()
+    school_id_2_name = School.map_id_2_name()
+    return render_template(
+        'view_all_courses.html',
+        courses=courses,
+        category_name=category_id_2_name,
+        school_name=school_id_2_name
+    )
 
 
 @app.route('/course/<int:id>/')
