@@ -72,7 +72,7 @@ class CourseCatalogTestCase(unittest.TestCase):
 
     # Test on a blank db to make sure starting clean
     def test_empty_db(self):
-        rv = self.app.get('/')
+        rv = self.app.get('/courses/')
         assert b'No courses' in rv.data
         rv = self.app.get('/schools/')
         assert b'No schools' in rv.data

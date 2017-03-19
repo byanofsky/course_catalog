@@ -42,11 +42,8 @@ def user_authorized(model):
 
 
 @app.route('/')
-@app.route('/courses/')
-def view_all_courses():
-    courses = Course.get_all()
-    print session
-    return render_template('view_all_courses.html', courses=courses)
+def frontpage():
+    return 'front_page'
 
 
 @app.route('/register/', methods=['GET', 'POST'])
@@ -383,6 +380,12 @@ def add_course():
                            categories=categories,
                            schools=schools,
                            errors=errors)
+
+@app.route('/courses/')
+def view_all_courses():
+    courses = Course.get_all()
+    print session
+    return render_template('view_all_courses.html', courses=courses)
 
 
 @app.route('/course/<int:id>/')
