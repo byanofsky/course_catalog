@@ -8,18 +8,12 @@
   <a href="{{ url_for('delete_category', id=category.id) }}">Delete</a>
 {% endif %}
 
+<h2>Courses in this Category:</h2>
 <ul>
-  <li>
-    User name:
-    {{ category.user.name}}
-  </li>
-</ul>
-
-<ul>
-  {% if courses %}
-  {% for course in courses %}
+  {% if category.courses %}
+  {% for course in category.courses %}
     <li>
-      {{ course }}
+      <a href="{{ url_for('view_course', id=course.id) }}">{{ course.name }}</a>
     </li>
   {% endfor %}
   {% endif %}
