@@ -43,7 +43,8 @@ def user_authorized(model):
 
 @app.route('/')
 def frontpage():
-    return 'front_page'
+    courses = Course.get_n(5, desc=True)
+    return render_template('frontpage.html', courses=courses)
 
 
 @app.route('/register/', methods=['GET', 'POST'])

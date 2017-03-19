@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Course Catalog{% endblock %}
+{% block body %}
+<h1>Course Catalog</h1>
+
+{% if session['user_id'] %}
+  <a href="{{ url_for('add_course') }}">Add Course</a>
+{% endif %}
+
+{% if courses %}
+<h2>5 Most Recent Courses</h2>
+<ul>
+  {% for course in courses %}
+  <li>
+    <a href="{{ url_for('view_course', id=course.id) }}">{{ course.name }}</a>
+    <ul>
+      <li>School: <a href="{{ url_for('view_school', id=course.school.id) }}">{{ course.school.name }}</a></li>
+      <li>Category: <a href="{{ url_for('view_category', id=course.category.id) }}">{{ course.category.name }}</a></li>
+    </ul>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>
+  No courses
+</p>
+{% endif %}
+
+{% endblock %}
