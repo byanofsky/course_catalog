@@ -213,7 +213,6 @@ class CourseCatalogTestCase(unittest.TestCase):
         assert b'School created' in rv.data
         assert b'Udacity' in rv.data
         assert b'www.udacity.com' in rv.data
-        assert b'Brandon' in rv.data
         # Check on view_all_schools page
         rv = self.app.get('/schools/')
         assert b'Udacity' in rv.data
