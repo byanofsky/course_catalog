@@ -13,8 +13,8 @@
   <li>
     <a href="{{ url_for('view_course', id=course.id) }}">{{ course.name }}</a>
     <ul>
-      <li>School: {{ course.school.name }}</li>
-      <li>Category: {{ course.category.name }}</li>
+      <li>School: <a href="{{ url_for('view_school', id=course.school.id) }}">{{ course.school.name }}</a></li>
+      <li>Category: <a href="{{ url_for('view_category', id=course.category.id) }}">{{ course.category.name }}</a></li>
     </ul>
   </li>
   {% endfor %}
