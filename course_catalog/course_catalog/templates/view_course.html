@@ -10,20 +10,16 @@
 
 <ul>
   <li>
-    URL:
-    {{ course.url }}
+    Course Website:
+    <a href="{{ course.url }}">{{ course.url }}</a>
   </li>
   <li>
     School:
-    {{ course.school.name }}
+    <a href="{{ url_for('view_school', id=course.school.id) }}">{{ course.school.name }}</a>
   </li>
   <li>
     Category:
-    {{ course.category.name }}
-  </li>
-  <li>
-    Owner:
-    {{ course.user.name}}
+    <a href="{{ url_for('view_category', id=course.category.id) }}">{{ course.category.name }}</a>
   </li>
 </ul>
 
