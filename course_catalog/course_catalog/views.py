@@ -350,24 +350,18 @@ def githubconnect():
 
     session['user_id'] = user.id
     session['github_token'] = access_token
+    # TODO: Can remove id since stored to database
     session['github_id'] = github_id
     print session
     return 'success'
 
-@app.route('/logout/')
+@app.route('/logout/', methods=['GET', 'POST'])
 def logout():
-    print 'Before logout:'
-    print session
-    session.pop('user_id', None)
-    provider = session.get('provider')
-    if provider == 'facebook':
-        fbdisconnect()
-    if provider == 'google':
-        googledisconnect()
-    if provider == 'github':
-        githubdisconnect()
-    flash('You were successfully logged out')
-    return redirect(url_for('login'))
+    if request.method == 'POST':
+        session.clear()
+        flash('You were successfully logged out')
+        return redirect(url_for('login'))
+    return render_template('logout.html')
 
 
 @app.route('/course/add/', methods=['GET', 'POST'])

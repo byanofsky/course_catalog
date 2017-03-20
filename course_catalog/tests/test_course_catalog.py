@@ -97,7 +97,7 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.register('by@me.com', 'Brandon', '12345', '12345')
         assert b'You were successfully registered' in rv.data
         # Log user out
-        self.app.get('/logout/')
+        self.app.post('/logout/')
         # Check that user was logged out successfully
         with self.app:
             self.app.get('/register/')
@@ -112,7 +112,7 @@ class CourseCatalogTestCase(unittest.TestCase):
         rv = self.register('by@me.com', 'Brandon', '12345', '12345')
         assert b'You were successfully registered' in rv.data
         # Log user out
-        self.app.get('/logout/')
+        self.app.post('/logout/')
         # Check that user was logged out successfully
         with self.app:
             self.app.get('/register/')
@@ -139,7 +139,7 @@ class CourseCatalogTestCase(unittest.TestCase):
             # Check that cookie is stored for user_id
             assert flask.session['user_id'] == 1
             # Logout and check message flashed
-            rv = self.app.get('/logout/', follow_redirects=True)
+            rv = self.app.post('/logout/', follow_redirects=True)
             assert b'You were successfully logged out' in rv.data
             # Check that cookie is removed
             assert 'user_id' not in flask.session
@@ -152,7 +152,7 @@ class CourseCatalogTestCase(unittest.TestCase):
     def test_login_next_url(self):
         with self.app:
             self.register('by@me.com', 'Brandon', '12345', '12345')
-            self.app.get('/logout/', follow_redirects=True)
+            self.app.post('/logout/', follow_redirects=True)
             assert 'user_id' not in flask.session
             # Visit add_school page without being logged in and
             # store redirect url
@@ -376,7 +376,7 @@ class CourseCatalogTestCase(unittest.TestCase):
         self.add_school('School 1', 'www.school1.com')
         self.add_category('Category 1')
         self.add_course('Course 1', 'www.course1.com', '1', '1')
-        self.app.get('/logout/')
+        self.app.post('/logout/')
 
         rv = self.app.get('/course/1/edit/', follow_redirects=True)
         assert b'Please log in to continue' in rv.data
@@ -396,7 +396,7 @@ class CourseCatalogTestCase(unittest.TestCase):
         self.add_school('School 1', 'www.school1.com')
         self.add_category('Category 1')
         self.add_course('Course 1', 'www.course1.com', '1', '1')
-        self.app.get('/logout/')
+        self.app.post('/logout/')
 
         self.register('user2@me.com', 'User2', '12345', '12345')
         rv = self.app.get('/course/1/edit/', follow_redirects=True)
@@ -434,7 +434,7 @@ class CourseCatalogTestCase(unittest.TestCase):
         assert b'Edit' in rv.data
         assert b'Delete' in rv.data
 
-        self.app.get('/logout/')
+        self.app.post('/logout/')
         rv = self.app.get('/courses/')
         assert b'Add Course' not in rv.data
         rv = self.app.get('/schools/')
