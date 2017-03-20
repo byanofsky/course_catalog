@@ -162,6 +162,7 @@ def fbconnect():
             user.edit(facebook_id=facebook_id)
 
     session['user_id'] = user.id
+    # TODO: Remove these and store in database
     session['fb_token'] = access_token
     session['facebook_id'] = facebook_id
 
@@ -223,9 +224,9 @@ def googleconnect():
     name = idinfo['name']
     google_id = idinfo['sub']
 
-    # Check if user exists. If it does, stores to user. Otherwise, create new
-    # user in database.
-    user = User.get_by_email(email)
+    # Check if user exists by provider id or email
+    user = User.get_by_providerid(google_id, 'google') or \
+        User.get_by_email(email)
     if not user :
         # If user does not exist, create entry in database
         # First create a random password
@@ -234,14 +235,21 @@ def googleconnect():
         user = User.create(
             name=name,
             email=email,
-            pwhash=bcrypt.generate_password_hash(pw, 10)
+            pwhash=bcrypt.generate_password_hash(pw, 10),
+            google_id=google_id
         )
-    #
+    else:
+        # User exists, so check it has google_id assigned.
+        # If does not exist, assign it
+        if not user.google_id:
+            user.edit(google_id=google_id)
+
+
     session['user_id'] = user.id
-    session['provider'] = 'google'
-    session['token'] = token
+    # TODO: remove tokens because stored in database
+    session['google_token'] = token
     session['google_id'] = google_id
-    #
+
     print "User logged in as %s" % user.name
     return "You are now logged in as %s" % user.name
 
@@ -249,24 +257,25 @@ def googleconnect():
 def googledisconnect():
     # Check if user is logged in with google
     print session
-    if session.get('provider') == 'google':
-        # Get google access token and google user id
-        token = session['token']
-        google_id = session['google_id']
+    # Get google access token and google user id
+    token = session['google_token']
+    google_id = session['google_id']
 
-        # Make api call to Google to revoke permissions
-        headers = {'Content-type': 'application/x-www-form-urlencoded'}
-        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
-              % token
-        # r = requests.get(url)
-        print url
+    # Make api call to Google to revoke permissions
+    headers = {'Content-type': 'application/x-www-form-urlencoded'}
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
+          % token
+    r = requests.get(url)
 
-        # print r
+    if r.status_code != requests.codes.ok:
+        print 'Issue revoking google permissions'
+        print r.text
+        abort(400)
 
-        # Remove google info from user session
-        # session.pop('token', None)
-        # session.pop('google_id', None)
-        # session.pop('provider', None)
+    # Remove google info from user session
+    # session.pop('token', None)
+    # session.pop('google_id', None)
+    # session.pop('provider', None)
     return 'Disconnected'
 
 
@@ -315,17 +324,33 @@ def githubconnect():
     r = requests.get(url, headers=headers)
     data = r.json()
 
-    # Get name and login details
-    name = data['name']
-    login = data['login']
     # If name is 'None', then use login
-    name = name or login
-    print name
+    name = data['name'] or data['login']
+    github_id = data['id']
 
-    # session['user_id'] = user.id
-    session['provider'] = 'github'
-    session['token'] = access_token
-    session['github_id'] = data['id']
+    # Check if user exists by provider id or email
+    user = User.get_by_providerid(github_id, 'github') or \
+        User.get_by_email(email)
+    if not user :
+        # If user does not exist, create entry in database
+        # First create a random password
+        pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                        for x in xrange(32))
+        user = User.create(
+            name=name,
+            email=email,
+            pwhash=bcrypt.generate_password_hash(pw, 10),
+            github_id=github_id
+        )
+    else:
+        # User exists, so check it has github_id assigned.
+        # If does not exist, assign it
+        if not user.github_id:
+            user.edit(github_id=github_id)
+
+    session['user_id'] = user.id
+    session['github_token'] = access_token
+    session['github_id'] = github_id
     print session
     return 'success'
 
