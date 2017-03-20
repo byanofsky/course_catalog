@@ -184,6 +184,7 @@ def fbdisconnect():
 
     if r.status_code != requests.codes.ok:
         print 'Issue revoking facebook permissions'
+        print r.text
         abort(400)
 
     # Remove facebook info from user session
