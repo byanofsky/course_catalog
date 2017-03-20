@@ -2,7 +2,7 @@ import random, string
 from functools import wraps
 
 from flask import render_template, session, request, make_response, flash, \
-    redirect, url_for, abort, json
+    redirect, url_for, abort, json, jsonify
 from flask_bcrypt import Bcrypt
 import requests
 from oauth2client import client, crypt
@@ -391,11 +391,39 @@ def view_all_courses():
         courses=courses
     )
 
+@app.route('/courses/JSON/')
+def view_all_courses_json():
+    courses = Course.get_all()
+    courses_json = []
+    for course in courses:
+        courses_json.append(
+            {
+                'id': course.id,
+                'name': course.name,
+                'url': course.url,
+                'school': course.school.name,
+                'category': course.category.name
+            }
+        )
+    return jsonify(courses_json)
+
 
 @app.route('/course/<int:id>/')
 def view_course(id):
     course = Course.get_or_404(id)
     return render_template('view_course.html', course=course)
+
+@app.route('/course/<int:id>/JSON/')
+def view_course_json(id):
+    course = Course.get_or_404(id)
+    course_json = {
+        'id': course.id,
+        'name': course.name,
+        'url': course.url,
+        'school': course.school.name,
+        'category': course.category.name
+    }
+    return jsonify(course_json)
 
 
 @app.route('/course/<int:id>/edit/', methods=['GET', 'POST'])
@@ -456,6 +484,22 @@ def view_all_schools():
     return render_template('view_all_schools.html', schools=schools)
 
 
+@app.route('/schools/JSON/')
+def schools_json():
+    schools = School.get_all()
+    schools_json = []
+    for school in schools:
+        schools_json.append(
+            {
+                'id': school.id,
+                'name': school.name,
+                'url': school.url,
+                'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in school.courses]
+            }
+        )
+    return jsonify(schools_json)
+
+
 @app.route('/school/add/', methods=['GET', 'POST'])
 @login_required
 def add_school():
@@ -486,6 +530,18 @@ def add_school():
 def view_school(id):
     school = School.get_or_404(id)
     return render_template('view_school.html', school=school)
+
+
+@app.route('/school/<int:id>/JSON/')
+def view_school_json(id):
+    school = School.get_or_404(id)
+    school_json = {
+        'id': school.id,
+        'name': school.name,
+        'url': school.url,
+        'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in school.courses]
+    }
+    return jsonify(school_json)
 
 
 @app.route('/school/<int:id>/edit/', methods=['GET', 'POST'])
@@ -537,6 +593,21 @@ def view_all_categories():
     return render_template('view_all_categories.html', categories=categories)
 
 
+@app.route('/categories/JSON/')
+def view_all_categories_json():
+    categories = Category.get_all()
+    categories_json = []
+    for category in categories:
+        categories_json.append(
+            {
+                'id': category.id,
+                'name': category.name,
+                'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in category.courses]
+            }
+        )
+    return jsonify(categories_json)
+
+
 @app.route('/category/add/', methods=['GET', 'POST'])
 @login_required
 def add_category():
@@ -565,6 +636,17 @@ def add_category():
 def view_category(id):
     category = Category.get_or_404(id)
     return render_template('view_category.html', category=category)
+
+
+@app.route('/category/<int:id>/JSON/')
+def view_category_json(id):
+    category = Category.get_or_404(id)
+    category_json = {
+        'id': category.id,
+        'name': category.name,
+        'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in category.courses]
+    }
+    return jsonify(category_json)
 
 
 @app.route('/category/<int:id>/edit/', methods=['GET', 'POST'])
