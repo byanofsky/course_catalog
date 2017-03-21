@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}GitHub Logout{% endblock %}
+{% block body %}
+<h1>GitHub Logout</h1>
+<p>
+  Click below to disconnect from Github. You will be directed to GitHub's application screen where you can revoke access.
+</p>
+<form method="post">
+  <input type="submit" value="Disconnect from GitHub">
+</form>
+{% endblock %}

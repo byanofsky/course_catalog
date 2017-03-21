@@ -363,8 +363,27 @@ def githubconnect():
     session['github_token'] = access_token
     # TODO: Can remove id since stored to database
     session['github_id'] = github_id
-    print session
-    return 'success'
+
+    print "User logged in as %s" % user.name
+    flash('You are now logged in.')
+    return redirect(url_for('view_all_courses'))
+
+@app.route('/githubdisconnect/', methods=['GET', 'POST'])
+def githubdisconnect():
+    if request.method == 'POST':
+        token = session.get('github_token')
+        github_id = session.get('github_id')
+        if not (token and github_id):
+            flash('You are not logged in to GitHub')
+            return redirect(url_for('githublogin'))
+        # Remove facebook info from user session
+        session.pop('github_token', None)
+        session.pop('github_id', None)
+        return redirect(
+            'https://github.com/settings/connections/applications/%s'
+            % github_id
+        )
+    return render_template('githubdisconnect.html')
 
 @app.route('/logout/', methods=['GET', 'POST'])
 def logout():
