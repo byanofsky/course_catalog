@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block head %}
+  {{ super() }}
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+  <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer></script>
+  <meta name="google-signin-client_id" content="">
+  <script>
+    function start() {
+      gapi.load('auth2', function() {
+        auth2 = gapi.auth2.init({
+          client_id: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+          // Scopes to request in addition to 'profile' and 'email'
+          //scope: 'additional_scope'
+        });
+      });
+    }
+  </script>
+
+  <script>
+  function onSignIn(googleUser) {
+    var id_token = googleUser.getAuthResponse().id_token;
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '{{ url_for("googleconnect") }}?state={{ STATE }}');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onload = function() {
+      console.log(xhr.status);
+      if (xhr.status === 200) {
+        $('#result').html('Login Successful!<br>' + xhr.responseText + '<br>Redirecting...');
+        setTimeout(function() {
+          window.location.href = "{{ url_for('view_all_courses') }}";
+        }, 1000);
+      } else {
+        $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+      }
+    };
+    xhr.send('idtoken=' + id_token);
+  }
+  </script>
+
+{% endblock %}
+{% block title %}Google Login{% endblock %}
+{% block body %}
+<div class="g-signin2" data-onsuccess="onSignIn"></div>
+<div id="result"></div>
+
+<a href="#" onclick="signOut();">Sign out</a>
+<script>
+  function signOut() {
+    var auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(function () {
+      console.log('User signed out.');
+    });
+    auth2.disconnect();
+  }
+</script>
+{% endblock %}
