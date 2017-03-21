@@ -5,7 +5,11 @@ from flask import render_template, session, request, make_response, flash, \
     redirect, url_for, abort, json, jsonify
 from flask_bcrypt import Bcrypt
 import requests
-from oauth2client import client, crypt
+import json
+# Needed for Google API Calls
+from apiclient import discovery
+import httplib2
+from oauth2client import client
 
 from course_catalog import app
 from models import User, Course, School, Category
@@ -208,28 +212,48 @@ def googlelogin():
     session['state'] = state
     return render_template('googlelogin.html', STATE=state)
 
-@app.route('/googleconnect', methods=['POST'])
+@app.route('/googleconnect', methods=['GET', 'POST'])
 def googleconnect():
     # Check that state exists in args and session, and that they match
     if not (request.args.get('state') and session.get('state')) or \
             request.args.get('state') != session.get('state'):
-        abort(403)
-    token = request.form['idtoken']
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    code = request.args.get('code')
+    print url_for('googleconnect', _external=True)
 
-    # Check that id token is valid
-    try:
-        idinfo = client.verify_id_token(token, app.config['GOOGLE_CLIENT_ID'])
+    url = 'https://www.googleapis.com/oauth2/v4/token'
+    payload = {
+        'code': code,
+        'client_id': app.config['GOOGLE_CLIENT_ID'],
+        'client_secret': app.config['GOOGLE_CLIENT_SECRET'],
+        'redirect_uri': url_for('googleconnect', _external=True),
+        'grant_type': 'authorization_code'
+    }
+    r = requests.post(url, params=payload)
+    data = r.json()
+    print data
+    access_token = data.get('access_token')
+    if not access_token:
+        response = make_response(json.dumps('Error connecting with Google.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    print access_token
 
-        if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
-            raise crypt.AppIdentityError("Wrong issuer.")
-    # If ID token is no valid, return 403
-    except crypt.AppIdentityError:
-        print 'Invalid ID Token'
-        abort(403)
-
-    email = idinfo['email']
-    name = idinfo['name']
-    google_id = idinfo['sub']
+    url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+    headers = {
+        'Authorization': 'Bearer ' + access_token
+    }
+    r = requests.get(url, headers=headers)
+    if r.status_code != requests.codes.ok:
+        response = make_response(json.dumps('Error connecting with Google.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    data = r.json()
+    email = data['email']
+    name = data['name']
+    google_id = data['sub']
 
     # Check if user exists by provider id or email
     user = User.get_by_providerid(google_id, 'google') or \
@@ -254,11 +278,12 @@ def googleconnect():
 
     session['user_id'] = user.id
     # TODO: remove tokens because stored in database
-    session['google_token'] = token
+    session['google_token'] = access_token
     session['google_id'] = google_id
 
     print "User logged in as %s" % user.name
-    return "You are now logged in as %s" % user.name
+    flash("You are now logged in as %s" % user.name)
+    return redirect(url_for('view_all_courses'))
 
 @app.route('/googledisconnect/', methods=['GET', 'POST'])
 def googledisconnect():
@@ -286,7 +311,8 @@ def googledisconnect():
         # Remove google info from user session
         session.pop('google_token', None)
         session.pop('google_id', None)
-        return 'Disconnected'
+        flash('Your account was disconnected from Google')
+        return redirect(url_for('login'))
     return render_template('googledisconnect.html')
 
 
