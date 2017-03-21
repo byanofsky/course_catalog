@@ -170,28 +170,35 @@ def fbconnect():
     return "You are now logged in as %s" % user.name
 
 
-@app.route('/fbdisconnect/')
+@app.route('/fbdisconnect/', methods=['GET', 'POST'])
 def fbdisconnect():
-    # Get facebook access token and facebook user id
-    token = session['fb_token']
-    facebook_id = session['facebook_id']
+    if request.method == 'POST':
+        # Get facebook access token and facebook user id
+        token = session.get('fb_token')
+        facebook_id = session.get('facebook_id')
+        if not (token and facebook_id):
+            flash('You are not logged in to Facebook')
+            return redirect(url_for('fblogin'))
 
-    # Make api call to Facebook to revoke permissions
-    url = 'https://graph.facebook.com/v2.8/%s/permissions' % facebook_id
-    payload = {
-        'access_token': token
-    }
-    r = requests.delete(url, params=payload)
+        # Make api call to Facebook to revoke permissions
+        url = 'https://graph.facebook.com/v2.8/%s/permissions' % facebook_id
+        payload = {
+            'access_token': token
+            # 'access_token': app.config['FB_APP_ID'] + '|' + app.config['FB_APP_SECRET']
+        }
+        r = requests.delete(url, params=payload)
 
-    if r.status_code != requests.codes.ok:
-        print 'Issue revoking facebook permissions'
-        print r.text
-        abort(400)
+        if r.status_code != requests.codes.ok:
+            print 'Issue revoking facebook permissions'
+            print r.text
+            flash('There was an issue revoking permissions. Try logging in and trying again.')
+            return redirect(url_for('fblogin'))
 
-    # Remove facebook info from user session
-    session.pop('fb_token', None)
-    session.pop('facebook_id', None)
-    return 'Disconnected'
+        # Remove facebook info from user session
+        session.pop('fb_token', None)
+        session.pop('facebook_id', None)
+        return 'Disconnected'
+    return render_template('fbdisconnect.html')
 
 @app.route('/googlelogin/')
 def googlelogin():
