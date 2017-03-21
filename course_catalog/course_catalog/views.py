@@ -260,30 +260,34 @@ def googleconnect():
     print "User logged in as %s" % user.name
     return "You are now logged in as %s" % user.name
 
-@app.route('/googledisconnect/')
+@app.route('/googledisconnect/', methods=['GET', 'POST'])
 def googledisconnect():
-    # Check if user is logged in with google
-    print session
-    # Get google access token and google user id
-    token = session['google_token']
-    google_id = session['google_id']
+    if request.method == 'POST':
+        # Get google access token and google user id
+        token = session['google_token']
+        google_id = session['google_id']
+        if not (token and google_id):
+            flash('You are not logged in with Google')
+            return redirect(url_for('googlelogin'))
 
-    # Make api call to Google to revoke permissions
-    headers = {'Content-type': 'application/x-www-form-urlencoded'}
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
-          % token
-    r = requests.get(url)
+        # Make api call to Google to revoke permissions
+        headers = {'Content-type': 'application/x-www-form-urlencoded'}
+        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
+              % token
+        r = requests.get(url)
 
-    if r.status_code != requests.codes.ok:
-        print 'Issue revoking google permissions'
-        print r.text
-        abort(400)
+        if r.status_code != requests.codes.ok:
+            print 'Issue revoking google permissions'
+            print r.text
+            flash('There was an issue revoking permissions. Try logging in and trying again.')
+            # return redirect(url_for('googlelogin'))
+            return 'issue'
 
-    # Remove google info from user session
-    # session.pop('token', None)
-    # session.pop('google_id', None)
-    # session.pop('provider', None)
-    return 'Disconnected'
+        # Remove google info from user session
+        session.pop('google_token', None)
+        session.pop('google_id', None)
+        return 'Disconnected'
+    return render_template('googledisconnect.html')
 
 
 @app.route('/githublogin/')
