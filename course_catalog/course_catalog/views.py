@@ -6,6 +6,7 @@ from flask import render_template, session, request, make_response, flash, \
 from flask_bcrypt import Bcrypt
 import requests
 import json
+import base64
 # Needed for Google API Calls
 from apiclient import discovery
 import httplib2
@@ -402,13 +403,22 @@ def githubdisconnect():
         if not (token and github_id):
             flash('You are not logged in to GitHub')
             return redirect(url_for('githublogin'))
-        # Remove facebook info from user session
+        # Remove github info from user session
+        url = 'https://api.github.com/applications/%s/grants/%s' \
+            % (app.config['GITHUB_CLIENT_ID'], token)
+        auth = app.config['GITHUB_CLIENT_ID'] + ':' + app.config['GITHUB_CLIENT_SECRET']
+        headers = {
+            'Authorization': 'Basic ' + base64.b64encode(auth)
+        }
+        print url
+        r = requests.delete(url, headers=headers)
+        if r.status_code != 204:
+            flash('There was an issue disconnecting. Please try again.')
+            return redirect(url_for('githubdisconnect'))
         session.pop('github_token', None)
         session.pop('github_id', None)
-        return redirect(
-            'https://github.com/settings/connections/applications/%s'
-            % github_id
-        )
+        flash('Disconnected from GitHub')
+        return redirect(url_for('logout'))
     return render_template('githubdisconnect.html')
 
 @app.route('/logout/', methods=['GET', 'POST'])
