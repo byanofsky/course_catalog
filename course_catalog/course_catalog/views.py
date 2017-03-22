@@ -22,6 +22,17 @@ from modules.form_validation import check_registration, check_login, \
 bcrypt = Bcrypt(app)
 
 
+def create_state():
+    """Helper function that creates a string of len=32
+    and assigns it to state attribute in session.
+    Is used to prevent CSRF.
+    """
+    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
+    session['state'] = state
+    return state
+
+
 def login_required(f):
     """Decorator to check if user is logged in.
     If not, redirects to login page.
@@ -41,7 +52,6 @@ def user_authorized(model):
 
     Args:
         model (str): The database model of the instance.
-        param2 (str): The second parameter.
     """
     def decorator(f):
         @wraps(f)
@@ -71,6 +81,7 @@ def frontpage():
 
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
+    # Start with no validation errors and no field entries
     errors = None
     fields = None
     if request.method == 'POST':
@@ -78,9 +89,16 @@ def register():
             'email': request.form['email'],
             'name': request.form['name'],
             'password': request.form['password'],
-            'verify_password': request.form['verify_password']
+            'verify_password': request.form['verify_password'],
+            'state': request.form['state']
         }
+        # Check that registration form fields validate
         errors = check_registration(fields, User.get_by_email(fields['email']))
+        # Check that state token matches, or ask user to try again.
+        if fields['state'] != session['state']:
+            errors['state'] = True
+            flash('There was an error, please try again.')
+        # If there are no validation errors, create user
         if not errors:
             user = User.create(
                 name=fields['name'],
@@ -90,8 +108,14 @@ def register():
             session['user_id'] = user.id
             flash('You were successfully registered')
             return redirect(url_for('view_all_courses'))
-
-    return render_template('register.html', fields=fields, errors=errors)
+    # If is method is GET, or there are errors above.
+    state = create_state()
+    return render_template(
+        'register.html',
+        state=state,
+        fields=fields,
+        errors=errors
+    )
 
 
 @app.route('/login/', methods=['GET', 'POST'])
