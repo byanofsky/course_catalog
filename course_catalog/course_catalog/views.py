@@ -64,6 +64,7 @@ def user_authorized(model):
 
 @app.route('/')
 def frontpage():
+    # Get 5 courses in descending order (5 most recent)
     courses = Course.get_n(5, desc=True)
     return render_template('frontpage.html', courses=courses)
 
