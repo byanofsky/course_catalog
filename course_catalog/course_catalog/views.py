@@ -168,11 +168,11 @@ def fbconnect():
     if not (request.args.get('state') and session.get('state')) or \
             request.args.get('state') != session.get('state'):
         print 'Invalid state parameter'
-        abort(403)
+        return 'Invalid state parameter', 403
+    # Store short lived token
     short_lived_token = request.form['access_token']
-    # short_lived_token = '12345'
 
-    # Exchange client token for server-side token
+    # Exchange short lived token for server-side access token
     url = 'https://graph.facebook.com/oauth/access_token'
     payload = {
         'grant_type': 'fb_exchange_token',
@@ -181,6 +181,7 @@ def fbconnect():
         'fb_exchange_token': short_lived_token
     }
     r = requests.get(url, params=payload)
+    # Store server-side access token
     access_token = r.text.split("&")[0].split("=")[1]
 
     # Get user info from api
@@ -197,13 +198,13 @@ def fbconnect():
     name = data['name']
     facebook_id = data['id']
 
-    # Check if user exists by provider id or email
+    # Check if user exists in database by provider id or email
     user = User.get_by_providerid(facebook_id, 'facebook') or \
         User.get_by_email(email)
-    # If there is no user, create a user
+    # If there is no user, create a new user
     if not user:
-        # If user does not exist, create entry in database
-        # First create a random password
+        # TODO: let user choose password
+        # Create a random password for user
         pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
                         for x in xrange(32))
         user = User.create(
@@ -213,19 +214,21 @@ def fbconnect():
             facebook_id=facebook_id
         )
     else:
-        # User exists, so check it has facebook_id assigned.
-        # If does not exist, assign it
+        # TODO: should this occur? Or should user manually add it?
+        # User exists, so check if facebook_id was assigned.
+        # If does not have facebook_id, assign it
         if not user.facebook_id:
             user.edit(facebook_id=facebook_id)
 
+    # Add user id to session
     session['user_id'] = user.id
-    # TODO: Remove these and store in database
+    # TODO: Remove these and store in database. \
+    # Needs to work with refresh token.
+    # Store access token and facebook user id for additional calls
     session['fb_token'] = access_token
     session['facebook_id'] = facebook_id
 
     flash('You are now logged in with Facebook')
-
-    print "User logged in as %s" % user.name
     return "You are now logged in as %s" % user.name
 
 
