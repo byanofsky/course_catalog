@@ -34,6 +34,14 @@
   <input type="submit" value="Submit">
 </form>
 
+<p>
+  Don't have an account?
+  <a href="{{ url_for('register') }}">
+    Click here to create an account
+  </a>,<br>
+  or log in through an option below.
+</p>
+
 <h2>Login through an existing account</h2>
 <a href="{{ url_for('fblogin') }}">Facebook</a>
 <a href="{{ url_for('googlelogin') }}">Google</a>
