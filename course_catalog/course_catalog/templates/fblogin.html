@@ -56,6 +56,8 @@
       document.getElementById('status').innerHTML =
         'Thanks for logging in, ' + response.name + '!';
 
+      // window.location.href = "{{ url_for('fbconnect') }}?state={{ STATE }}";
+
       var xhr = new XMLHttpRequest();
       xhr.open('POST', '{{ url_for("fbconnect") }}?state={{ STATE }}');
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -63,34 +65,12 @@
         console.log(xhr.status);
         if (xhr.status === 200) {
           $('#status').html('Login Successful!<br>' + xhr.responseText + '<br>Redirecting...');
-          setTimeout(function() {
-            window.location.href = "{{ url_for('view_all_courses') }}";
-          }, 1000);
+          window.location.href = "{{ url_for('frontpage') }}";
         } else {
           $('#status').html('Failed to make a server-side call. Check your configuration and console.');
         }
       };
       xhr.send('access_token=' + accessToken);
-
-      // $.ajax({
-      //   type: 'POST',
-      //   url: '/fbconnect?state={{STATE}}',
-      //   processData: false,
-      //   data: accessToken,
-      //   contentType: 'application/octet-stream; charset=utf-8',
-      //   success: function(result) {
-      //     // Handle or verify the server response if necessary.
-      //     if (result) {
-      //       console.log
-      //       $('#result').html('Login Successful!<br>' + result + '<br>Redirecting...');
-      //       setTimeout(function() {
-      //         window.location.href = "{{ url_for('view_all_courses') }}";
-      //       }, 2000);
-      //     } else {
-      //       $('#result').html('Failed to make a server-side call. Check your configuration and console.');
-      //     }
-      //   }
-      // });
     });
   }
   </script>

@@ -171,6 +171,8 @@ def fbconnect():
     session['fb_token'] = access_token
     session['facebook_id'] = facebook_id
 
+    flash('You are now logged in with Facebook')
+
     print "User logged in as %s" % user.name
     return "You are now logged in as %s" % user.name
 
@@ -202,7 +204,8 @@ def fbdisconnect():
         # Remove facebook info from user session
         session.pop('fb_token', None)
         session.pop('facebook_id', None)
-        return 'Disconnected'
+        flash('You have disconnected from Facebook')
+        return redirect(url_for('login'))
     return render_template('fbdisconnect.html')
 
 @app.route('/googlelogin/')
