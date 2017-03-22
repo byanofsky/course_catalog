@@ -206,7 +206,7 @@ def fbconnect():
         # TODO: let user choose password
         # Create a random password for user
         pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                        for x in xrange(32))
+                     for x in xrange(32))
         user = User.create(
             name=name,
             email=email,
