@@ -139,7 +139,7 @@ def login():
             # then checks if password is correct.
             if not user:
                 # TODO: change to 'not exists'
-                errors['user_exists'] = True
+                errors['user_not_exist'] = True
             elif not bcrypt.check_password_hash(user.pwhash,
                                                 fields['password']):
                 errors['password'] = True
