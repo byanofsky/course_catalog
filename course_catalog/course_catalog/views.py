@@ -109,7 +109,7 @@ def register():
             session['user_id'] = user.id
             flash('You were successfully registered')
             return redirect(url_for('view_all_courses'))
-    # If is method is GET, or there are errors above.
+    # If method is GET, or there are errors above, return register template.
     state = create_state()
     return render_template(
         'register.html',
