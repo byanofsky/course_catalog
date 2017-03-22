@@ -90,14 +90,14 @@ def register():
             'name': request.form['name'],
             'password': request.form['password'],
             'verify_password': request.form['verify_password'],
-            'state': request.form['state']
+            # 'state': request.form['state']
         }
         # Check that registration form fields validate
         errors = check_registration(fields, User.get_by_email(fields['email']))
         # Check that state token matches, or ask user to try again.
-        if fields['state'] != session['state']:
-            errors['state'] = True
-            flash('There was an error, please try again.')
+        # if fields['state'] != session['state']:
+        #     errors['state'] = True
+        #     flash('There was an error, please try again.')
         # If there are no validation errors, create user
         if not errors:
             user = User.create(
