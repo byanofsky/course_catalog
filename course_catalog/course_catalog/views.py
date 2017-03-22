@@ -18,11 +18,14 @@ from modules.form_validation import check_registration, check_login, \
     check_no_blanks
 
 
+# Create an instance of bcrypt for password hashing
 bcrypt = Bcrypt(app)
 
 
-# Function decorator for handling login requirements
 def login_required(f):
+    """Decorator to check if user is logged in.
+    If not, redirects to login page.
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if session.get('user_id') is None:
@@ -33,12 +36,23 @@ def login_required(f):
 
 
 def user_authorized(model):
+    """Decorator to check if user is authorized to access associated model
+    instance. If user is not authorized, aborts with 403 error.
+
+    Args:
+        model (str): The database model of the instance.
+        param2 (str): The second parameter.
+    """
     def decorator(f):
         @wraps(f)
         def decorated_function(id, *args, **kwargs):
-            user_id = session.get('user_id')
+            """Checks that logged in user_id matches user_id of instance."""
+            # Get user_id of logged in user
+            user_id = session['user_id']
+            # Get item by id. If it does not exist, return 404.
             item = model.query.get_or_404(id)
-            # item = model.query.filter_by(id=id).first()
+            # If user does not exist, or user does not own item,
+            # return 403 status
             if user_id != item.user_id:
                 abort(403)
             return f(id, *args, **kwargs)
