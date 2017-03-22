@@ -51,6 +51,8 @@ def user_authorized(model):
             user_id = session['user_id']
             # Get item by id. If it does not exist, return 404.
             item = model.query.get_or_404(id)
+            # Make sure that item does have a user, or return 500 error
+            assert item.user_id2
             # If user does not exist, or user does not own item,
             # return 403 status
             if user_id != item.user_id:
