@@ -154,13 +154,12 @@ def login():
                 return redirect(next_url)
     return render_template('login.html', fields=fields, errors=errors)
 
+
 @app.route('/fblogin/')
 def fblogin():
     # Creates and stores an anti-forgery token
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    session['state'] = state
-    return render_template('fblogin.html', STATE=state)
+    state = create_state()
+    return render_template('fblogin.html', state=state)
 
 
 @app.route('/fbconnect', methods=['POST'])

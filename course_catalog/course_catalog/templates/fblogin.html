@@ -59,7 +59,7 @@
       // window.location.href = "{{ url_for('fbconnect') }}?state={{ STATE }}";
 
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', '{{ url_for("fbconnect") }}?state={{ STATE }}');
+      xhr.open('POST', '{{ url_for("fbconnect") }}?state={{ state }}');
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.onload = function() {
         console.log(xhr.status);
