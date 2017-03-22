@@ -765,7 +765,7 @@ def edit_category(id):
     return render_template('edit_category.html', fields=fields, errors=errors)
 
 
-@app.route('/category/<int:id>/delete/', methods=['POST', 'GET'])
+@app.route('/category/<int:id>/delete/', methods=['GET', 'POST'])
 @login_required
 @user_authorized(Category)
 def delete_category(id):
