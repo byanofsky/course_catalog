@@ -121,26 +121,37 @@ def register():
 
 @app.route('/login/', methods=['GET', 'POST'])
 def login():
+    # Start with no errors and no fields
     errors = None
     fields = None
     if request.method == 'POST':
+        # Get fields passed through form
         fields = {
             'email': request.form['email'],
             'password': request.form['password']
         }
+        # Validate login fields (does not authenticate yet)
         errors = check_login(fields=fields)
         if not errors:
+            # Attempt to find user in database by email
             user = User.get_by_email(fields['email'])
+            # Performs authentication. First checks if user exists,
+            # then checks if password is correct.
             if not user:
+                # TODO: change to 'not exists'
                 errors['user_exists'] = True
-            elif not bcrypt.check_password_hash(user.pwhash, fields['password']):
+            elif not bcrypt.check_password_hash(user.pwhash,
+                                                fields['password']):
                 errors['password'] = True
             else:
+                # User is authenaticated. Save user id to session
                 session['user_id'] = user.id
                 flash('You were successfully logged in')
-                redirect_url = request.args.get('next', url_for('view_all_courses'))
-                return redirect(redirect_url)
-    # Creates and stores an anti-forgery token
+                # If user was directed to login page from another page,
+                # direct user back to that page.
+                next_url = request.args.get('next',
+                                            url_for('view_all_courses'))
+                return redirect(next_url)
     return render_template('login.html', fields=fields, errors=errors)
 
 @app.route('/fblogin/')
