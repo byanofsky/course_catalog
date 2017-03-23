@@ -1,53 +1,68 @@
 from course_catalog import db
 
-# from database import Base, db_session
-
-# db = SQLAlchemy(app)
-db_session = db.session
+# Rename base database model to Base
 Base = db.Model
-Column = db.Column
-Integer = db.Integer
-String = db.String
-Sequence = db.Sequence
-ForeignKey = db.ForeignKey
-Text = db.Text
-relationship = db.relationship
 
 
-# Create helper methods for Base class model
+# Helper functions for Base class model
 def create(cls, **kw):
-    instance = cls(**kw)
-    db_session.add(instance)
-    db_session.commit()
-    return instance
+    """Create and commit new instances"""
+    # New instance
+    i = cls(**kw)
+    db.session.add(i)
+    # Commit instance to db
+    db.session.commit()
+    # Return instance to access data
+    return i
+
 
 def get_by_id(cls, id):
+    """Get an instance by id"""
     return cls.query.get(id)
 
+
 def get_or_404(cls, id):
+    """Get an instance by id. If does not exist, abort(404)"""
     return cls.query.get_or_404(id)
 
+
 def get_n(cls, n, desc=False):
+    """Get 'n' number of instances of a model.
+
+    Args:
+        cls (class): The database class.
+        n (int): Number of instances to return.
+        desc (bool): True shows in descending order. False in ascending.
+
+    Returns:
+        (object): An instance of the cls
+    """
     if desc:
         return cls.query.order_by(cls.id.desc()).limit(n).all()
     else:
         return cls.query.order_by(cls.id).limit(n).all()
 
+
 def get_all(cls):
+    """Get all instances of class 'cls'."""
     return cls.query.all()
 
+
 def delete(self):
-    db_session.delete(self)
-    db_session.commit()
+    """Delete instance from database."""
+    db.session.delete(self)
+    db.session.commit()
+
 
 def edit(self, **kw):
+    """Edit instance and commit to database."""
     for i in kw:
         setattr(self, i, kw[i])
-    db_session.add(self)
-    db_session.commit()
+    db.session.add(self)
+    db.session.commit()
 
 
-# Assign helper methods to Base class model
+# Assign helper functions to Base class model
 Base.create = classmethod(create)
 Base.get_by_id = classmethod(get_by_id)
 Base.get_or_404 = classmethod(get_or_404)
@@ -59,19 +74,18 @@ Base.edit = edit
 
 class User(Base):
     __tablename__ = 'users'
-    id = Column(Integer, Sequence('user_id_seq'), primary_key=True)
-    name = Column(String(50))
-    email = Column(String(120), unique=True, nullable=False)
-    pwhash = Column(Text)
-    facebook_id = Column(Text)
-    google_id = Column(Text)
-    github_id = Column(Text)
+    id = db.Column(db.Integer, db.Sequence('user_id_seq'), primary_key=True)
+    name = db.Column(db.String(50))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    pwhash = db.Column(db.String(60), nullable=False)
+    facebook_id = db.Column(db.Text)
+    google_id = db.Column(db.Text)
+    github_id = db.Column(db.Text)
 
-    courses = relationship("Course", back_populates="user")
-
-    schools = relationship("School", back_populates="user")
-
-    categories = relationship("Category", back_populates="user")
+    # TODO: do we need back_populates here?
+    courses = db.relationship("Course", back_populates="user")
+    schools = db.relationship("School", back_populates="user")
+    categories = db.relationship("Category", back_populates="user")
 
     def __init__(self, name, email, pwhash,
                  facebook_id=None, google_id=None, github_id=None):
@@ -87,34 +101,36 @@ class User(Base):
 
     @classmethod
     def get_by_email(cls, email):
-        return cls.query.filter_by(email=email).first()
+        # TODO: shoud this be 'get' vs 'first'
+        return cls.query.filter_by(email=email).one_or_none()
 
     @classmethod
     def get_by_providerid(cls, id, provider):
+        # TODO: repetetive code. Get query, then one or none
         if provider == 'facebook':
-            return cls.query.filter_by(facebook_id=id).first()
+            return cls.query.filter_by(facebook_id=id).one_or_none()
         elif provider == 'google':
-            return cls.query.filter_by(google_id=id).first()
+            return cls.query.filter_by(google_id=id).one_or_none()
         elif provider == 'github':
-            return cls.query.filter_by(github_id=id).first()
+            return cls.query.filter_by(github_id=id).one_or_none()
         else:
             return None
 
 
 class Course(Base):
     __tablename__ = 'courses'
-    id = Column(Integer, Sequence('course_id_seq'), primary_key=True)
-    name = Column(String(50), nullable=False)
-    url = Column(Text)
+    id = db.Column(db.Integer, db.Sequence('course_id_seq'), primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    url = db.Column(db.Text)
 
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="courses")
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship("User", back_populates="courses")
 
-    school_id = Column(Integer, ForeignKey('schools.id'))
-    school = relationship("School", back_populates="courses")
+    school_id = db.Column(db.Integer, db.ForeignKey('schools.id'))
+    school = db.relationship("School", back_populates="courses")
 
-    category_id = Column(Integer, ForeignKey('categories.id'))
-    category = relationship("Category", back_populates="courses")
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    category = db.relationship("Category", back_populates="courses")
 
     def __init__(self, name, url, user_id, school_id, category_id):
         self.name = name
@@ -129,14 +145,14 @@ class Course(Base):
 
 class School(Base):
     __tablename__ = 'schools'
-    id = Column(Integer, Sequence('school_id_seq'), primary_key=True)
-    name = Column(String(50), nullable=False, unique=True)
-    url = Column(Text)
+    id = db.Column(db.Integer, db.Sequence('school_id_seq'), primary_key=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
+    url = db.Column(db.Text)
 
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="schools")
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship("User", back_populates="schools")
 
-    courses = relationship("Course", back_populates="school")
+    courses = db.relationship("Course", back_populates="school")
 
     def __init__(self, name, url, user_id):
         self.name = name
@@ -152,13 +168,13 @@ class School(Base):
 
 class Category(Base):
     __tablename__ = 'categories'
-    id = Column(Integer, Sequence('category_id_seq'), primary_key=True)
-    name = Column(String(50), nullable=False)
+    id = db.Column(db.Integer, db.Sequence('category_id_seq'), primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
 
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="categories")
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship("User", back_populates="categories")
 
-    courses = relationship("Course", back_populates="category")
+    courses = db.relationship("Course", back_populates="category")
 
     def __init__(self, name, user_id):
         self.name = name
