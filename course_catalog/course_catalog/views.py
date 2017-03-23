@@ -725,6 +725,7 @@ def delete_course(id):
 
 @app.route('/schools/')
 def view_all_schools():
+    # Get all schools
     schools = School.get_all()
     return render_template('view_all_schools.html', schools=schools)
 
