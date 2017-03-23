@@ -999,6 +999,7 @@ def edit_category(id):
 @login_required
 @user_authorized(Category)
 def delete_category(id):
+    # Retrieve category of 404
     category = Category.get_or_404(id)
     if request.method == 'POST':
         category.delete()
