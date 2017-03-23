@@ -659,40 +659,55 @@ def view_course_json(id):
 @login_required
 @user_authorized(Course)
 def edit_course(id):
-        course = Course.get_or_404(id)
-        errors = None
-        categories = Category.get_all()
-        schools = School.get_all()
-        if request.method == 'POST':
-            fields = {
-                'name': request.form['name'],
-                'url': request.form['url'],
-                'school': request.form.get('school', ''),
-                'category': request.form.get('category', '')
-            }
-            errors = check_no_blanks(fields=fields)
+    # Get course from db or 404
+    course = Course.get_or_404(id)
+    # Start with no errors
+    errors = None
+    # Get categories and schools to populate dropdowns
+    categories = Category.get_all()
+    schools = School.get_all()
+
+    if request.method == 'POST':
+        fields = {
+            'name': request.form['name'],
+            'url': request.form['url'],
+            'school': request.form.get('school', ''),
+            'category': request.form.get('category', '')
+        }
+        # Validations that checks that no fields are blank
+        errors = check_no_blanks(fields=fields)
+        if not errors:
+            # Check that new course name does not exist already for this school
+            school_courses = School.get_by_id(fields['school']).courses
+            for school_course in school_courses:
+                # If name isn't changed, will exist so allow this
+                if school_course.name == fields['name'] and \
+                        school_course.id != course.id:
+                    errors['name_exists'] = True
             if not errors:
-                school_courses = School.get_by_id(fields['school']).courses
-                for school_course in school_courses:
-                    if school_course.name == fields['name'] and school_course.id != course.id:
-                        errors['name_exists'] = True
-                if not errors:
-                    course.edit(
-                        name=fields['name'],
-                        url=fields['url'],
-                        school_id=fields['school'],
-                        category_id=fields['category']
-                    )
-                    flash('Course edited')
-                    return redirect(url_for('view_course', id=course.id))
-        else:
-            fields = {
-                'name': course.name,
-                'url': course.url,
-                'school': course.school.id,
-                'category': course.category.id
-            }
-        return render_template('edit_course.html', fields=fields, errors=errors, categories=categories, schools=schools)
+                course.edit(
+                    name=fields['name'],
+                    url=fields['url'],
+                    school_id=fields['school'],
+                    category_id=fields['category']
+                )
+                flash('Course edited')
+                return redirect(url_for('view_course', id=course.id))
+    # If it is not a POST request, populate input values from database
+    else:
+        fields = {
+            'name': course.name,
+            'url': course.url,
+            'school': course.school.id,
+            'category': course.category.id
+        }
+    return render_template(
+        'edit_course.html',
+        fields=fields,
+        errors=errors,
+        categories=categories,
+        schools=schools
+    )
 
 
 @app.route('/course/<int:id>/delete/', methods=['GET', 'POST'])
