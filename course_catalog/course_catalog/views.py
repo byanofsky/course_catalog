@@ -860,6 +860,7 @@ def edit_school(id):
 @login_required
 @user_authorized(School)
 def delete_school(id):
+    # Get school from db or 404
     school = School.get_or_404(id)
     if request.method == 'POST':
         school.delete()
