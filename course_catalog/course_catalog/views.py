@@ -233,11 +233,17 @@ def fbconnect():
 
 
 @app.route('/fbdisconnect/', methods=['GET', 'POST'])
+@login_required
 def fbdisconnect():
-    if request.method == 'POST':
+    if request.method == 'GET':
+        return render_template('fbdisconnect.html')
+    elif request.method == 'POST':
         # Get facebook access token and facebook user id
+        # TODO: retrieve these from database and get refresh token if needed
         token = session.get('fb_token')
         facebook_id = session.get('facebook_id')
+        # TODO: need to use refresh token here
+        # If there is not a token or facebook_id, user is not logged in to fb
         if not (token and facebook_id):
             flash('You are not logged in to Facebook')
             return redirect(url_for('fblogin'))
@@ -246,22 +252,27 @@ def fbdisconnect():
         url = 'https://graph.facebook.com/v2.8/%s/permissions' % facebook_id
         payload = {
             'access_token': token
+            # TODO: might not need access token to revoke. Check fb docs.
             # 'access_token': app.config['FB_APP_ID'] + '|' + app.config['FB_APP_SECRET']
         }
         r = requests.delete(url, params=payload)
-
-        if r.status_code != requests.codes.ok:
+        # Check status code if revoke was successful
+        if r.status_code == requests.codes.ok:
+            # Remove facebook info from user session
+            # TODO: if store in db, need to remove from db
+            session.pop('fb_token', None)
+            session.pop('facebook_id', None)
+            flash('You have disconnected from Facebook')
+            return redirect(url_for('login'))
+        else:
+            # Issue revoking permissions.
+            # Print error for debug purposes
             print 'Issue revoking facebook permissions'
             print r.text
-            flash('There was an issue revoking permissions. Try logging in and trying again.')
+            # TODO: Maybe this would be better to do redirect to fb login
+            # then back to disconnect.
+            flash('There was an issue revoking permissions. Please try again.')
             return redirect(url_for('fblogin'))
-
-        # Remove facebook info from user session
-        session.pop('fb_token', None)
-        session.pop('facebook_id', None)
-        flash('You have disconnected from Facebook')
-        return redirect(url_for('login'))
-    return render_template('fbdisconnect.html')
 
 @app.route('/googlelogin/')
 def googlelogin():
