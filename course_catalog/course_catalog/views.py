@@ -364,35 +364,45 @@ def googleconnect():
     flash("You are now logged in with Google account for %s" % name)
     return redirect(url_for('frontpage'))
 
+
 @app.route('/googledisconnect/', methods=['GET', 'POST'])
+@login_required
 def googledisconnect():
-    if request.method == 'POST':
+    if request.method == 'GET':
+        return render_template('googledisconnect.html')
+    elif request.method == 'POST':
         # Get google access token and google user id
-        token = session['google_token']
-        google_id = session['google_id']
+        # TODO: retrieve these from database and get refresh token if needed
+        token = session.get('google_token')
+        google_id = session.get('google_id')
+        # TODO: need to use refresh token here
+        # If there is not a token or google_id, user is not logged in to Google
         if not (token and google_id):
             flash('You are not logged in with Google')
             return redirect(url_for('googlelogin'))
 
         # Make api call to Google to revoke permissions
+        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % token
         headers = {'Content-type': 'application/x-www-form-urlencoded'}
-        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' \
-              % token
         r = requests.get(url)
-
-        if r.status_code != requests.codes.ok:
+        # Check status code if revoke was successful
+        if r.status_code == requests.codes.ok:
+            # Remove google info from user session
+            # TODO: if store in db, need to remove from db
+            session.pop('google_token', None)
+            session.pop('google_id', None)
+            flash('Your account was disconnected from Google')
+            return redirect(url_for('login'))
+        else:
+            # Issue revoking permissions.
+            # Print error for debug purposes
             print 'Issue revoking google permissions'
             print r.text
-            flash('There was an issue revoking permissions. Try logging in and trying again.')
-            # return redirect(url_for('googlelogin'))
-            return 'issue'
-
-        # Remove google info from user session
-        session.pop('google_token', None)
-        session.pop('google_id', None)
-        flash('Your account was disconnected from Google')
-        return redirect(url_for('login'))
-    return render_template('googledisconnect.html')
+            # TODO: Maybe this would be better to do redirect to fb login
+            # then back to disconnect.
+            flash('There was an issue revoking permissions. \
+                  Try logging in and trying again.')
+            return redirect(url_for('googlelogin'))
 
 
 @app.route('/githublogin/')
