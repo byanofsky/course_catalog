@@ -555,6 +555,37 @@ def logout():
     return render_template('logout.html')
 
 
+@app.route('/courses/')
+def view_all_courses():
+    # Gets all courses in database
+    # TODO: add pagination or limit to how many courses load at a time
+    courses = Course.get_all()
+    return render_template(
+        'view_all_courses.html',
+        courses=courses
+    )
+
+
+@app.route('/courses/JSON/')
+def view_all_courses_json():
+    # Get all courses from database
+    courses = Course.get_all()
+    # Create a list to store courses for JSON
+    courses_json = []
+    # Iterate through courses and extract info for JSON
+    for course in courses:
+        courses_json.append(
+            {
+                'id': course.id,
+                'name': course.name,
+                'url': course.url,
+                'school': course.school.name,
+                'category': course.category.name
+            }
+        )
+    return jsonify(courses=courses_json)
+
+
 @app.route('/course/add/', methods=['GET', 'POST'])
 @login_required
 def add_course():
@@ -600,37 +631,6 @@ def add_course():
                            categories=categories,
                            schools=schools,
                            errors=errors)
-
-
-@app.route('/courses/')
-def view_all_courses():
-    # Gets all courses in database
-    # TODO: add pagination or limit to how many courses load at a time
-    courses = Course.get_all()
-    return render_template(
-        'view_all_courses.html',
-        courses=courses
-    )
-
-
-@app.route('/courses/JSON/')
-def view_all_courses_json():
-    # Get all courses from database
-    courses = Course.get_all()
-    # Create a list to store courses for JSON
-    courses_json = []
-    # Iterate through courses and extract info for JSON
-    for course in courses:
-        courses_json.append(
-            {
-                'id': course.id,
-                'name': course.name,
-                'url': course.url,
-                'school': course.school.name,
-                'category': course.category.name
-            }
-        )
-    return jsonify(courses=courses_json)
 
 
 @app.route('/course/<int:id>/')
