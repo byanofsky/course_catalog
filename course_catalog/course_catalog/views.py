@@ -348,8 +348,8 @@ def googleconnect():
         )
     else:
         # TODO: should this occur? Or should user manually add it?
-        # User exists, so check if facebook_id was assigned.
-        # If does not have facebook_id, assign it
+        # User exists, so check if google_id was assigned.
+        # If does not have google_id, assign it
         if not user.google_id:
             user.edit(google_id=google_id)
 
