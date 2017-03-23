@@ -411,15 +411,14 @@ def githublogin():
     state = create_state()
     return render_template('githublogin.html', state=state)
 
+
 @app.route('/githubconnect/')
 def githubconnect():
-    # Store state
-    state = request.args.get('state')
     # Check that state exists in args and session, and that they match
-    if not (state and session.get('state')) or \
-            state != session.get('state'):
-        print 'States do not match'
-        abort(403)
+    if not (request.args.get('state') and session.get('state')) or \
+            request.args.get('state') != session.get('state'):
+        print 'Invalid state parameter'
+        return 'Invalid state parameter', 403
     # Store code that GitHub returns
     code = request.args.get('code')
 
@@ -429,37 +428,55 @@ def githubconnect():
         'client_id': app.config['GITHUB_CLIENT_ID'],
         'client_secret': app.config['GITHUB_CLIENT_SECRET'],
         'code': code,
-        'state': state
+        'state': request.args['state']
     }
     r = requests.post(url, params=payload)
     # Store access token
     access_token = r.text.split('&')[0].split('=')[1]
 
-    # Make request to API for email
+    # Make sure we received an access token, or return an error
+    if not access_token:
+        # TODO: should this be returning error or redirect?
+        # return 'Error connecting with GitHub.', 401
+        flash('There was an error connecting with GitHub. Please try again.')
+        return redirect(url_for('githublogin'))
+
+    # Make request to API for user's email
     url = 'https://api.github.com/user/emails'
-    headers = {'Authorization': 'token %s' % access_token}
-    r = requests.get(url, headers=headers)
-    # Store user info
-    email = r.json()[0]['email']
+    headers = {
+        'Authorization': 'token %s' % access_token
+    }
+    r1 = requests.get(url, headers=headers)
+    # Store user email
+    email = r1.json()[0]['email']
 
     # Make request to API for user info
     url = 'https://api.github.com/user'
-    headers = {'Authorization': 'token %s' % access_token}
-    r = requests.get(url, headers=headers)
-    data = r.json()
-
-    # If name is 'None', then use login
+    headers = {
+        'Authorization': 'token %s' % access_token
+    }
+    r2 = requests.get(url, headers=headers)
+    # Check status code for any errors
+    if (r1.status_code != requests.codes.ok or
+            r1.status_code != requests.codes.ok):
+        # TODO: should this be returning error or redirect?
+        # return 'Error connecting with GitHub.', 401
+        flash('There was an error connecting with GitHub. Please try again.')
+        return redirect(url_for('githublogin'))
+    data = r2.json()
+    # Name could be 'None'. If it is, use their login username
     name = data['name'] or data['login']
     github_id = data['id']
 
     # Check if user exists by provider id or email
     user = User.get_by_providerid(github_id, 'github') or \
         User.get_by_email(email)
-    if not user :
-        # If user does not exist, create entry in database
-        # First create a random password
+    # If there is no user, create a new user
+    if not user:
+        # TODO: let user choose password
+        # Create a random password for user
         pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                        for x in xrange(32))
+                     for x in xrange(32))
         user = User.create(
             name=name,
             email=email,
@@ -467,19 +484,22 @@ def githubconnect():
             github_id=github_id
         )
     else:
-        # User exists, so check it has github_id assigned.
-        # If does not exist, assign it
+        # TODO: should this occur? Or should user manually add it?
+        # User exists, so check if github_id was assigned.
+        # If does not have github_id, assign it
         if not user.github_id:
             user.edit(github_id=github_id)
 
+    # Add user id to session
     session['user_id'] = user.id
+    # TODO: Remove these and store in database. \
+    # Needs to work with refresh token.
+    # Store github token and github user id for additional calls
     session['github_token'] = access_token
-    # TODO: Can remove id since stored to database
     session['github_id'] = github_id
 
-    print "User logged in as %s" % user.name
-    flash('You are now logged in.')
-    return redirect(url_for('view_all_courses'))
+    flash("You are now logged in with GitHub account for %s" % name)
+    return redirect(url_for('frontpage'))
 
 @app.route('/githubdisconnect/', methods=['GET', 'POST'])
 def githubdisconnect():
