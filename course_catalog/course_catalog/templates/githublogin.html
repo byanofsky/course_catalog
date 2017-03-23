@@ -4,7 +4,7 @@
 {% endblock %}
 {% block title %}GitHub Login{% endblock %}
 {% block body %}
-<a href="https://github.com/login/oauth/authorize?client_id={{ config['GITHUB_CLIENT_ID'] }}&redirect_uri={{ request.url_root[:-1] }}{{ url_for('githubconnect') }}&scope=user:email&state={{ STATE }}&">
+<a href="https://github.com/login/oauth/authorize?client_id={{ config['GITHUB_CLIENT_ID'] }}&amp;redirect_uri={{ request.url_root[:-1] }}{{ url_for('githubconnect') }}&amp;scope=user:email&amp;state={{ state }}">
   Login with GitHub
 </a>
 {% endblock %}

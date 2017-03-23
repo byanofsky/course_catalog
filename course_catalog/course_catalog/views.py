@@ -408,10 +408,8 @@ def googledisconnect():
 @app.route('/githublogin/')
 def githublogin():
     # Creates and stores an anti-forgery token
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    session['state'] = state
-    return render_template('githublogin.html', STATE=state)
+    state = create_state()
+    return render_template('githublogin.html', state=state)
 
 @app.route('/githubconnect/')
 def githubconnect():
