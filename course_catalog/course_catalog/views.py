@@ -612,10 +612,14 @@ def view_all_courses():
         courses=courses
     )
 
+
 @app.route('/courses/JSON/')
 def view_all_courses_json():
+    # Get all courses from database
     courses = Course.get_all()
+    # Create a list to store courses for JSON
     courses_json = []
+    # Iterate through courses and extract info for JSON
     for course in courses:
         courses_json.append(
             {
@@ -626,7 +630,7 @@ def view_all_courses_json():
                 'category': course.category.name
             }
         )
-    return jsonify(courses_json)
+    return jsonify(courses=courses_json)
 
 
 @app.route('/course/<int:id>/')
