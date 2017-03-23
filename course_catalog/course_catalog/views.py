@@ -501,31 +501,48 @@ def githubconnect():
     flash("You are now logged in with GitHub account for %s" % name)
     return redirect(url_for('frontpage'))
 
+
 @app.route('/githubdisconnect/', methods=['GET', 'POST'])
+@login_required
 def githubdisconnect():
+    if request.method == 'GET':
+        return render_template('githubdisconnect.html')
     if request.method == 'POST':
+        # Get github access token and github user id
         token = session.get('github_token')
         github_id = session.get('github_id')
+        # TODO: need to use refresh token here
+        # If there is not a token or github_id, user is not logged in to github
         if not (token and github_id):
             flash('You are not logged in to GitHub')
             return redirect(url_for('githublogin'))
-        # Remove github info from user session
+
+        # Make API call to github to revoke permissions
         url = 'https://api.github.com/applications/%s/grants/%s' \
             % (app.config['GITHUB_CLIENT_ID'], token)
-        auth = app.config['GITHUB_CLIENT_ID'] + ':' + app.config['GITHUB_CLIENT_SECRET']
+        auth = app.config['GITHUB_CLIENT_ID'] + ':' + \
+            app.config['GITHUB_CLIENT_SECRET']
         headers = {
             'Authorization': 'Basic ' + base64.b64encode(auth)
         }
-        print url
         r = requests.delete(url, headers=headers)
-        if r.status_code != 204:
+        # Check status if revoke was successful
+        if r.status_code == 204:
+            # Remove github info from user session
+            # TODO: if store in db, need to remove from db
+            session.pop('github_token', None)
+            session.pop('github_id', None)
+            flash('You have disconnected from GitHub')
+            return redirect(url_for('login'))
+        else:
+            # Issue revoking permissions.
+            # Print error for debug purposes
+            print 'Issue revoking github permissions'
+            print r.text
+            # TODO: Maybe this would be better to do redirect to github login
+            # then back to disconnect.
             flash('There was an issue disconnecting. Please try again.')
-            return redirect(url_for('githubdisconnect'))
-        session.pop('github_token', None)
-        session.pop('github_id', None)
-        flash('Disconnected from GitHub')
-        return redirect(url_for('logout'))
-    return render_template('githubdisconnect.html')
+            return redirect(url_for('githublogin'))
 
 @app.route('/logout/', methods=['GET', 'POST'])
 def logout():
