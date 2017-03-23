@@ -798,12 +798,23 @@ def view_school(id):
 
 @app.route('/school/<int:id>/JSON/')
 def view_school_json(id):
+    # Get school or 404
     school = School.get_or_404(id)
+    # Extract school info
     school_json = {
         'id': school.id,
         'name': school.name,
         'url': school.url,
-        'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in school.courses]
+        'courses': [
+            {
+                'id': course.id,
+                'name': course.name,
+                'url': course.url,
+                'school': course.school.name,
+                'category': course.category.name
+            }
+            for course in school.courses
+        ]
     }
     return jsonify(school_json)
 
