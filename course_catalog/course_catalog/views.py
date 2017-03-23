@@ -878,17 +878,28 @@ def view_all_categories():
 
 @app.route('/categories/JSON/')
 def view_all_categories_json():
+    # Retrieve all categories
     categories = Category.get_all()
+    # Create empty list for storing JSON data
     categories_json = []
     for category in categories:
         categories_json.append(
             {
                 'id': category.id,
                 'name': category.name,
-                'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in category.courses]
+                'courses': [
+                    {
+                        'id': course.id,
+                        'name': course.name,
+                        'url': course.url,
+                        'school': course.school.name,
+                        'category': course.category.name
+                    }
+                    for course in category.courses
+                ]
             }
         )
-    return jsonify(categories_json)
+    return jsonify(categories=categories_json)
 
 
 @app.route('/category/add/', methods=['GET', 'POST'])
