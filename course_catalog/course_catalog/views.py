@@ -275,13 +275,12 @@ def fbdisconnect():
             flash('There was an issue revoking permissions. Please try again.')
             return redirect(url_for('fblogin'))
 
+
 @app.route('/googlelogin/')
 def googlelogin():
     # Creates and stores an anti-forgery token
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))
-    session['state'] = state
-    return render_template('googlelogin.html', STATE=state)
+    state = create_state()
+    return render_template('googlelogin.html', state=state)
 
 @app.route('/googleconnect', methods=['GET', 'POST'])
 def googleconnect():
