@@ -714,12 +714,13 @@ def edit_course(id):
 @login_required
 @user_authorized(Course)
 def delete_course(id):
-        course = Course.get_or_404(id)
-        if request.method == 'POST':
-            course.delete()
-            flash('Course successfully deleted')
-            return redirect(url_for('view_all_courses'))
-        return render_template('delete_course.html', course=course)
+    # Get course from db or 404
+    course = Course.get_or_404(id)
+    if request.method == 'POST':
+        course.delete()
+        flash('Course successfully deleted')
+        return redirect(url_for('view_all_courses'))
+    return render_template('delete_course.html', course=course)
 
 
 @app.route('/schools/')
