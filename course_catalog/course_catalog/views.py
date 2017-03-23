@@ -871,6 +871,7 @@ def delete_school(id):
 
 @app.route('/categories/')
 def view_all_categories():
+    # Retrieve all categories
     categories = Category.get_all()
     return render_template('view_all_categories.html', categories=categories)
 
