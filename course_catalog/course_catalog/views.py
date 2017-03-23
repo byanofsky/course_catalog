@@ -732,7 +732,9 @@ def view_all_schools():
 
 @app.route('/schools/JSON/')
 def schools_json():
+    # Get all schools from db
     schools = School.get_all()
+    # Create list to store JSON data
     schools_json = []
     for school in schools:
         schools_json.append(
@@ -740,10 +742,19 @@ def schools_json():
                 'id': school.id,
                 'name': school.name,
                 'url': school.url,
-                'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in school.courses]
+                'courses': [
+                    {
+                        'id': course.id,
+                        'name': course.name,
+                        'url': course.url,
+                        'school': course.school.name,
+                        'category': course.category.name
+                    }
+                    for course in school.courses
+                ]
             }
         )
-    return jsonify(schools_json)
+    return jsonify(schools=schools_json)
 
 
 @app.route('/school/add/', methods=['GET', 'POST'])
