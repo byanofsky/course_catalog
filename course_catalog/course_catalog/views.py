@@ -282,17 +282,18 @@ def googlelogin():
     state = create_state()
     return render_template('googlelogin.html', state=state)
 
+
 @app.route('/googleconnect', methods=['GET', 'POST'])
 def googleconnect():
     # Check that state exists in args and session, and that they match
     if not (request.args.get('state') and session.get('state')) or \
             request.args.get('state') != session.get('state'):
-        response = make_response(json.dumps('Invalid state parameter.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        print 'Invalid state parameter'
+        return 'Invalid state parameter', 403
+    # Store code sent by Google
     code = request.args.get('code')
-    print url_for('googleconnect', _external=True)
 
+    # Exchange code for an access token
     url = 'https://www.googleapis.com/oauth2/v4/token'
     payload = {
         'code': code,
@@ -303,23 +304,28 @@ def googleconnect():
     }
     r = requests.post(url, params=payload)
     data = r.json()
-    print data
     access_token = data.get('access_token')
-    if not access_token:
-        response = make_response(json.dumps('Error connecting with Google.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
-    print access_token
 
+    # Make sure we received an access token, or return an error
+    if not access_token:
+        # TODO: should this be returning error or redirect?
+        # return 'Error connecting with Google.', 401
+        flash('There was an error connecting with Google. Please try again.')
+        return redirect(url_for('googlelogin'))
+
+    # Make API call to Google for user info
     url = 'https://www.googleapis.com/oauth2/v3/userinfo'
     headers = {
         'Authorization': 'Bearer ' + access_token
     }
     r = requests.get(url, headers=headers)
+    # Check status code for any errors
     if r.status_code != requests.codes.ok:
-        response = make_response(json.dumps('Error connecting with Google.'), 401)
-        response.headers['Content-Type'] = 'application/json'
-        return response
+        # TODO: should this be returning error or redirect?
+        # return 'Error connecting with Google.', 401
+        flash('There was an error connecting with Google. Please try again.')
+        return redirect(url_for('googlelogin'))
+    # Store user info
     data = r.json()
     email = data['email']
     name = data['name']
@@ -328,11 +334,12 @@ def googleconnect():
     # Check if user exists by provider id or email
     user = User.get_by_providerid(google_id, 'google') or \
         User.get_by_email(email)
-    if not user :
-        # If user does not exist, create entry in database
-        # First create a random password
+    # If there is no user, create a new user
+    if not user:
+        # TODO: let user choose password
+        # Create a random password for user
         pw = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                        for x in xrange(32))
+                     for x in xrange(32))
         user = User.create(
             name=name,
             email=email,
@@ -340,20 +347,22 @@ def googleconnect():
             google_id=google_id
         )
     else:
-        # User exists, so check it has google_id assigned.
-        # If does not exist, assign it
+        # TODO: should this occur? Or should user manually add it?
+        # User exists, so check if facebook_id was assigned.
+        # If does not have facebook_id, assign it
         if not user.google_id:
             user.edit(google_id=google_id)
 
-
+    # Add user id to session
     session['user_id'] = user.id
-    # TODO: remove tokens because stored in database
+    # TODO: Remove these and store in database. \
+    # Needs to work with refresh token.
+    # Store google token and google user id for additional calls
     session['google_token'] = access_token
     session['google_id'] = google_id
 
-    print "User logged in as %s" % user.name
-    flash("You are now logged in as %s" % user.name)
-    return redirect(url_for('view_all_courses'))
+    flash("You are now logged in with Google account for %s" % name)
+    return redirect(url_for('frontpage'))
 
 @app.route('/googledisconnect/', methods=['GET', 'POST'])
 def googledisconnect():
