@@ -904,6 +904,7 @@ def view_all_categories_json():
 
 @app.route('/category/<int:id>/')
 def view_category(id):
+    # Retrieve category from db of 404
     category = Category.get_or_404(id)
     return render_template('view_category.html', category=category)
 
