@@ -965,14 +965,19 @@ def add_category():
 @login_required
 @user_authorized(Category)
 def edit_category(id):
+    # Retrieve school from db or 404
     category = Category.get_or_404(id)
+    # Start with no errors
     errors = None
     if request.method == 'POST':
         fields = {
             'name': request.form['name']
         }
+        # Validations that check that no fields are empty
         errors = check_no_blanks(fields=fields)
         if not errors:
+            # Check that category name does not match other category names,
+            # except if it is the same instance
             if (Category.get_by_name(fields['name']) and
                     Category.get_by_name(fields['name']).id != category.id):
                 errors['name_exists'] = True
@@ -982,6 +987,7 @@ def edit_category(id):
                 )
                 flash('Category edited')
                 return redirect(url_for('view_category', id=category.id))
+    # If it is not a POST rquest, populate field values from database
     else:
         fields = {
             'name': category.name
