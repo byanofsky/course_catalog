@@ -791,6 +791,7 @@ def add_school():
 
 @app.route('/school/<int:id>/')
 def view_school(id):
+    # Get school from db or 404
     school = School.get_or_404(id)
     return render_template('view_school.html', school=school)
 
