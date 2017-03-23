@@ -911,11 +911,22 @@ def view_category(id):
 
 @app.route('/category/<int:id>/JSON/')
 def view_category_json(id):
+    # Retrieve category or 404
     category = Category.get_or_404(id)
+    # Prepare category info in JSON format
     category_json = {
         'id': category.id,
         'name': category.name,
-        'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in category.courses]
+        'courses': [
+            {
+                'id': course.id,
+                'name': course.name,
+                'url': course.url,
+                'school': course.school.name,
+                'category': course.category.name
+            }
+            for course in category.courses
+        ]
     }
     return jsonify(category_json)
 
