@@ -1,21 +1,18 @@
-import random, string
+import random
+import string
 from functools import wraps
 
 from flask import render_template, session, request, make_response, flash, \
-    redirect, url_for, abort, json, jsonify
+                  redirect, url_for, abort, json, jsonify
 from flask_bcrypt import Bcrypt
 import requests
 import json
 import base64
-# Needed for Google API Calls
-from apiclient import discovery
-import httplib2
-from oauth2client import client
 
 from course_catalog import app
 from models import User, Course, School, Category
 from modules.form_validation import check_registration, check_login, \
-    check_no_blanks
+                                    check_no_blanks
 
 
 # Create an instance of bcrypt for password hashing
