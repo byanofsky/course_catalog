@@ -558,25 +558,32 @@ def logout():
 @app.route('/course/add/', methods=['GET', 'POST'])
 @login_required
 def add_course():
+    # Start with no errors and no fields
     errors = None
     fields = None
+    # Grab user id. Associates course with user.
     user_id = session['user_id']
+    # Get all categories and schools to populate dropdowns
     categories = Category.get_all()
     schools = School.get_all()
+
     if request.method == 'POST':
+        # Grab all form data
         fields = {
             'name': request.form['name'],
             'url': request.form['url'],
             'school': request.form.get('school', ''),
             'category': request.form.get('category', '')
         }
+        # Form validation that makes sure no fields are blank
         errors = check_no_blanks(fields=fields)
         if not errors:
-            # Check if course by same name exists witin school
+            # Check if school already has course by same name
             school_courses = School.get_by_id(fields['school']).courses
             for school_course in school_courses:
                 if school_course.name == fields['name']:
                     errors['name_exists'] = True
+            # If there are no errors, then create course
             if not errors:
                 course = Course.create(
                     name=fields['name'],
@@ -587,6 +594,7 @@ def add_course():
                 )
                 flash('Course created')
                 return redirect(url_for('view_course', id=course.id))
+    # If this is a GET request, or there are errors, show form
     return render_template('add_course.html',
                            fields=fields,
                            categories=categories,
