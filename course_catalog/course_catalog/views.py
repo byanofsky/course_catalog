@@ -823,25 +823,31 @@ def view_school_json(id):
 @login_required
 @user_authorized(School)
 def edit_school(id):
+    # Get school from db or 404
     school = School.get_or_404(id)
+    # Start with no errors
     errors = None
     if request.method == 'POST':
         fields = {
             'name': request.form['name'],
             'url': request.form['url']
         }
+        # Validations that check that no fields are empty
         errors = check_no_blanks(fields=fields)
         if not errors:
+            # Check that school name does not match other school names,
+            # except if it is the same instance
             if (School.get_by_name(fields['name']) and
                     School.get_by_name(fields['name']).id != school.id):
                 errors['name_exists'] = True
-            else:
+            if not errors:
                 school.edit(
                     name=fields['name'],
                     url=fields['url']
                 )
                 flash('School edited')
                 return redirect(url_for('view_school', id=school.id))
+    # If it is not a POST rquest, populate field values from database
     else:
         fields = {
             'name': school.name,
