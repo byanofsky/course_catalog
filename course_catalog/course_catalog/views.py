@@ -253,7 +253,8 @@ def fbdisconnect():
         payload = {
             'access_token': token
             # TODO: might not need access token to revoke. Check fb docs.
-            # 'access_token': app.config['FB_APP_ID'] + '|' + app.config['FB_APP_SECRET']
+            # 'access_token': app.config['FB_APP_ID'] + '|' + \
+            #                  app.config['FB_APP_SECRET']
         }
         r = requests.delete(url, params=payload)
         # Check status code if revoke was successful
