@@ -601,8 +601,11 @@ def add_course():
                            schools=schools,
                            errors=errors)
 
+
 @app.route('/courses/')
 def view_all_courses():
+    # Gets all courses in database
+    # TODO: add pagination or limit to how many courses load at a time
     courses = Course.get_all()
     return render_template(
         'view_all_courses.html',
