@@ -51,7 +51,7 @@ def user_authorized(model):
     instance. If user is not authorized, aborts with 403 error.
 
     Args:
-        model (str): The database model of the instance.
+        model (object): The database model of the instance.
     """
     def decorator(f):
         @wraps(f)
