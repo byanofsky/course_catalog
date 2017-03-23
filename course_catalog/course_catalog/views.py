@@ -586,6 +586,28 @@ def view_all_courses_json():
     return jsonify(courses=courses_json)
 
 
+@app.route('/course/<int:id>/')
+def view_course(id):
+    # Get course from db, or 404
+    course = Course.get_or_404(id)
+    return render_template('view_course.html', course=course)
+
+
+@app.route('/course/<int:id>/JSON/')
+def view_course_json(id):
+    # Get course from db, or 404
+    course = Course.get_or_404(id)
+    # Extract data needed for JSON
+    course_json = {
+        'id': course.id,
+        'name': course.name,
+        'url': course.url,
+        'school': course.school.name,
+        'category': course.category.name
+    }
+    return jsonify(course_json)
+
+
 @app.route('/course/add/', methods=['GET', 'POST'])
 @login_required
 def add_course():
@@ -631,28 +653,6 @@ def add_course():
                            categories=categories,
                            schools=schools,
                            errors=errors)
-
-
-@app.route('/course/<int:id>/')
-def view_course(id):
-    # Get course from db, or 404
-    course = Course.get_or_404(id)
-    return render_template('view_course.html', course=course)
-
-
-@app.route('/course/<int:id>/JSON/')
-def view_course_json(id):
-    # Get course from db, or 404
-    course = Course.get_or_404(id)
-    # Extract data needed for JSON
-    course_json = {
-        'id': course.id,
-        'name': course.name,
-        'url': course.url,
-        'school': course.school.name,
-        'category': course.category.name
-    }
-    return jsonify(course_json)
 
 
 @app.route('/course/<int:id>/edit/', methods=['GET', 'POST'])
@@ -757,6 +757,36 @@ def schools_json():
     return jsonify(schools=schools_json)
 
 
+@app.route('/school/<int:id>/')
+def view_school(id):
+    # Get school from db or 404
+    school = School.get_or_404(id)
+    return render_template('view_school.html', school=school)
+
+
+@app.route('/school/<int:id>/JSON/')
+def view_school_json(id):
+    # Get school or 404
+    school = School.get_or_404(id)
+    # Extract school info
+    school_json = {
+        'id': school.id,
+        'name': school.name,
+        'url': school.url,
+        'courses': [
+            {
+                'id': course.id,
+                'name': course.name,
+                'url': course.url,
+                'school': course.school.name,
+                'category': course.category.name
+            }
+            for course in school.courses
+        ]
+    }
+    return jsonify(school_json)
+
+
 @app.route('/school/add/', methods=['GET', 'POST'])
 @login_required
 def add_school():
@@ -787,36 +817,6 @@ def add_school():
                 flash('School created')
                 return redirect(url_for('view_school', id=school.id))
     return render_template('add_school.html', fields=fields, errors=errors)
-
-
-@app.route('/school/<int:id>/')
-def view_school(id):
-    # Get school from db or 404
-    school = School.get_or_404(id)
-    return render_template('view_school.html', school=school)
-
-
-@app.route('/school/<int:id>/JSON/')
-def view_school_json(id):
-    # Get school or 404
-    school = School.get_or_404(id)
-    # Extract school info
-    school_json = {
-        'id': school.id,
-        'name': school.name,
-        'url': school.url,
-        'courses': [
-            {
-                'id': course.id,
-                'name': course.name,
-                'url': course.url,
-                'school': course.school.name,
-                'category': course.category.name
-            }
-            for course in school.courses
-        ]
-    }
-    return jsonify(school_json)
 
 
 @app.route('/school/<int:id>/edit/', methods=['GET', 'POST'])
@@ -902,6 +902,23 @@ def view_all_categories_json():
     return jsonify(categories=categories_json)
 
 
+@app.route('/category/<int:id>/')
+def view_category(id):
+    category = Category.get_or_404(id)
+    return render_template('view_category.html', category=category)
+
+
+@app.route('/category/<int:id>/JSON/')
+def view_category_json(id):
+    category = Category.get_or_404(id)
+    category_json = {
+        'id': category.id,
+        'name': category.name,
+        'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in category.courses]
+    }
+    return jsonify(category_json)
+
+
 @app.route('/category/add/', methods=['GET', 'POST'])
 @login_required
 def add_category():
@@ -930,23 +947,6 @@ def add_category():
                 flash('Category created')
                 return redirect(url_for('view_category', id=category.id))
     return render_template('add_category.html', fields=fields, errors=errors)
-
-
-@app.route('/category/<int:id>/')
-def view_category(id):
-    category = Category.get_or_404(id)
-    return render_template('view_category.html', category=category)
-
-
-@app.route('/category/<int:id>/JSON/')
-def view_category_json(id):
-    category = Category.get_or_404(id)
-    category_json = {
-        'id': category.id,
-        'name': category.name,
-        'courses': [{'id': course.id, 'name': course.name, 'url': course.url, 'school': course.school.name, 'category': course.category.name} for course in category.courses]
-    }
-    return jsonify(category_json)
 
 
 @app.route('/category/<int:id>/edit/', methods=['GET', 'POST'])
