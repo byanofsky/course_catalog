@@ -642,7 +642,9 @@ def view_course(id):
 
 @app.route('/course/<int:id>/JSON/')
 def view_course_json(id):
+    # Get course from db, or 404
     course = Course.get_or_404(id)
+    # Extract data needed for JSON
     course_json = {
         'id': course.id,
         'name': course.name,
