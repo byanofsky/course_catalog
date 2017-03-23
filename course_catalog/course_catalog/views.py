@@ -635,8 +635,10 @@ def view_all_courses_json():
 
 @app.route('/course/<int:id>/')
 def view_course(id):
+    # Get course from db, or 404
     course = Course.get_or_404(id)
     return render_template('view_course.html', course=course)
+
 
 @app.route('/course/<int:id>/JSON/')
 def view_course_json(id):
