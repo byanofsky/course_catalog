@@ -544,9 +544,11 @@ def githubdisconnect():
             flash('There was an issue disconnecting. Please try again.')
             return redirect(url_for('githublogin'))
 
+
 @app.route('/logout/', methods=['GET', 'POST'])
 def logout():
     if request.method == 'POST':
+        # Remove all stored session data
         session.clear()
         flash('You were successfully logged out')
         return redirect(url_for('login'))
