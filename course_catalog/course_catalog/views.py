@@ -760,16 +760,22 @@ def schools_json():
 @app.route('/school/add/', methods=['GET', 'POST'])
 @login_required
 def add_school():
+    # Start with no errors and no fields
     errors = None
     fields = None
+    # Store user id from session to associate school with user
     user_id = session['user_id']
+
     if request.method == 'POST':
         fields = {
             'name': request.form['name'],
             'url': request.form['url']
         }
+        # Validate form submission by checking no empty fields
         errors = check_no_blanks(fields=fields)
         if not errors:
+            # Check that school name does not already exist
+            # TODO: this check needs to check by case insensitive
             if School.get_by_name(fields['name']):
                 errors['name_exists'] = True
             else:
