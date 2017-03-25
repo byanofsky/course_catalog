@@ -1,67 +1,82 @@
 {% extends "layout.html" %}
 {% block title %}Add Course{% endblock %}
 {% block body %}
-<h1>Add Course</h1>
+<div class="page-header">
+  <h1>Add Course</h1>
+</div>
 <form method="post">
-  <label>
-    Course Name
-    <input type="text" name="name" value="{{ fields.name }}">
-    {% if errors and errors.name_exists %}
-      <div class="error">
-        A course already exists with that name for this school.
-      </div>
-    {% endif %}
-    {% if errors and errors.name %}
-      <div class="error">
+  <div class="form-group{% if errors and (errors.name or errors.name_exists) %} has-error{% endif %}">
+    <label class="control-label" for="course-name">Course Name</label>
+    <input class="form-control"
+           id="course-name"
+           type="text"
+           name="name"
+           value="{{ fields.name }}"
+           aria-describedby="course-name-help">
+    <span id="course-name-help" class="help-block">
+      {% if errors and errors.name %}
         Please enter a course name.
-      </div>
-    {% endif %}
-  </label>
+      {% elif errors and errors.name_exists %}
+        A course already exists with that name for this school.
+      {% endif %}
+    </span>
+  </div>
 
-  <label>
-    Course URL
-    <input type="text" name="url" value="{{ fields.url }}">
-    {% if errors and errors.url %}
-      <div class="error">
+  <div class="form-group{% if errors and errors.url %} has-error{% endif %}">
+    <label class="control-label" for="course-url">Course URL</label>
+    <input class="form-control"
+           id="course-url"
+           type="text"
+           name="url"
+           value="{{ fields.url }}"
+           aria-describedby="course-url-help">
+    <span id="course-url-help" class="help-block">
+      {% if errors and errors.url %}
         Please enter a course URL.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <label>
-    School
-    <select name="school">
+  <div class="form-group{% if errors and errors.school %} has-error{% endif %}">
+    <label class="control-label" for="school">School</label>
+    <select class="form-control"
+            id="school"
+            name="school"
+            aria-describedby="school-help">
       <option value=""{% if not fields.school %} selected{% endif %} disabled>Choose a School</option>
       {% if schools %}
-      {% for school in schools %}
-      <option value="{{ school.id }}"{% if fields and fields.school|int() == school.id %} selected{% endif %}>{{ school.name }}</option>
-      {% endfor %}
+        {% for school in schools %}
+          <option value="{{ school.id }}"{% if fields and fields.school|int() == school.id %} selected{% endif %}>{{ school.name }}</option>
+        {% endfor %}
       {% endif %}
     </select>
-    {% if errors and errors.school %}
-      <div class="error">
+    <span id="school-help" class="help-block">
+      {% if errors and errors.school %}
         Please select a school.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <label>
-    Category
-    <select name="category">
+  <div class="form-group{% if errors and errors.category %} has-error{% endif %}">
+    <label class="control-label" for="category">Category</label>
+    <select class="form-control"
+            id="category"
+            name="category"
+            aria-describedby="category-help">
       <option value=""{% if not fields.category %} selected{% endif %} disabled>Choose a Category</option>
       {% if categories %}
-      {% for category in categories %}
-      <option value="{{ category.id }}"{% if fields and fields.category|int() == category.id %} selected{% endif %}>{{ category.name }}</option>
-      {% endfor %}
+        {% for category in categories %}
+          <option value="{{ category.id }}"{% if fields and fields.category|int() == category.id %} selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
       {% endif %}
     </select>
-    {% if errors and errors.category %}
-      <div class="error">
+    <span id="category-help" class="help-block">
+      {% if errors and errors.category %}
         Please select a category.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <input type="submit" value="Submit">
+  <button type="submit" class="btn btn-default">Submit</button>
 </form>
 {% endblock %}
