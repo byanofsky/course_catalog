@@ -10,9 +10,8 @@ def create(cls, **kw):
     # New instance
     i = cls(**kw)
     db.session.add(i)
-    # Commit instance to db
     db.session.commit()
-    # Return instance to access data
+    # Return instance to allow further action on it
     return i
 
 
@@ -56,6 +55,7 @@ def delete(self):
 
 def edit(self, **kw):
     """Edit instance and commit to database."""
+    # Iterate through parameters and edit instance
     for i in kw:
         setattr(self, i, kw[i])
     db.session.add(self)
@@ -78,11 +78,13 @@ class User(Base):
     name = db.Column(db.String(50))
     email = db.Column(db.String(120), unique=True, nullable=False)
     pwhash = db.Column(db.String(60), nullable=False)
+    # Store ids for social logins
     facebook_id = db.Column(db.Text)
     google_id = db.Column(db.Text)
     github_id = db.Column(db.Text)
 
     # TODO: do we need back_populates here?
+    # Create relationships to allow user to 'own' authored items
     courses = db.relationship("Course", back_populates="user")
     schools = db.relationship("School", back_populates="user")
     categories = db.relationship("Category", back_populates="user")
@@ -101,11 +103,30 @@ class User(Base):
 
     @classmethod
     def get_by_email(cls, email):
+        """Retrieve user by email.
+
+        Args:
+            cls (class): The database model class.
+            email (str): Email address to search by
+
+        Returns:
+            (User): the user instance, or none if no user found by email.
+        """
         # TODO: shoud this be 'get' vs 'first'
         return cls.query.filter_by(email=email).one_or_none()
 
     @classmethod
     def get_by_providerid(cls, id, provider):
+        """Retrieve user by stored id from OAuth providers.
+
+        Args:
+            cls (class): The database model class.
+            id (str): The user id.
+            provider (str): The OAuth provider, ie 'facebook'
+
+        Returns:
+            (User): the user instance, or none if no user found by provider id.
+        """
         # TODO: repetetive code. Get query, then one or none
         if provider == 'facebook':
             return cls.query.filter_by(facebook_id=id).one_or_none()
@@ -123,6 +144,10 @@ class Course(Base):
     name = db.Column(db.String(50), nullable=False)
     url = db.Column(db.Text)
 
+    # TODO: do we need both directions in relationship?
+    # TODO: do we need to store id? Or can we just use \
+    # the relationship attribute
+    # Create relationships from course to author, school, and category
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship("User", back_populates="courses")
 
@@ -149,9 +174,11 @@ class School(Base):
     name = db.Column(db.String(50), nullable=False, unique=True)
     url = db.Column(db.Text)
 
+    # Create relationship links between author and school
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship("User", back_populates="schools")
 
+    # Create relationship to easily access all courses within school
     courses = db.relationship("Course", back_populates="school")
 
     def __init__(self, name, url, user_id):
@@ -164,16 +191,29 @@ class School(Base):
 
     @classmethod
     def get_by_name(cls, name):
-        return cls.query.filter_by(name=name).first()
+        """Retrieve school by name.
+
+        Args:
+            cls (class): The database model class.
+            name (str): The school name to search for.
+
+        Returns:
+            (School): the school instance, or none if no school found by name.
+        """
+        return cls.query.filter_by(name=name).one_or_none()
+
 
 class Category(Base):
     __tablename__ = 'categories'
-    id = db.Column(db.Integer, db.Sequence('category_id_seq'), primary_key=True)
+    id = db.Column(db.Integer, db.Sequence('category_id_seq'),
+                   primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
+    # Create relationship links between author and category
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     user = db.relationship("User", back_populates="categories")
 
+    # Create relationship to easily access all courses within category
     courses = db.relationship("Course", back_populates="category")
 
     def __init__(self, name, user_id):
@@ -185,4 +225,14 @@ class Category(Base):
 
     @classmethod
     def get_by_name(cls, name):
-        return cls.query.filter_by(name=name).first()
+        """Retrieve category by name.
+
+        Args:
+            cls (class): The database model class.
+            name (str): The category name to search for.
+
+        Returns:
+            (Category): the category instance, or none if no category
+                found by name.
+        """
+        return cls.query.filter_by(name=name).one_or_none()
