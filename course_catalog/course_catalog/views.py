@@ -178,8 +178,9 @@ def fbconnect():
         'fb_exchange_token': short_lived_token
     }
     r = requests.get(url, params=payload)
+    data = r.json()
     # Store server-side access token
-    access_token = r.text.split("&")[0].split("=")[1]
+    access_token = data['access_token']
 
     # Get user info from api
     url = 'https://graph.facebook.com/v2.8/me'
