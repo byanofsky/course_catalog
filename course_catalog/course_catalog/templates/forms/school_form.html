@@ -1,0 +1,35 @@
+<form method="post">
+  <div class="form-group{% if errors and (errors.name or errors.name_exists) %} has-error{% endif %}">
+    <label class="control-label" for="school-name">School Name</label>
+    <input class="form-control"
+           id="school-name"
+           type="text"
+           name="name"
+           value="{{ fields.name }}"
+           aria-describedby="school-name-help">
+    <span id="school-name-help" class="help-block">
+      {% if errors and errors.name_exists %}
+        A school already exists with that name.
+      {% elif errors and errors.name %}
+        Please enter a school name.
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="form-group{% if errors and errors.url %} has-error{% endif %}">
+    <label class="control-label" for="school-url">School URL</label>
+    <input class="form-control"
+           id="school-url"
+           type="text"
+           name="url"
+           value="{{ fields.url }}"
+           aria-describedby="cschool-url-help">
+    <span id="school-url-help" class="help-block">
+      {% if errors and errors.url %}
+        Please enter a school url.
+      {% endif %}
+    </span>
+  </div>
+
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
