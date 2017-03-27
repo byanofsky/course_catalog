@@ -1,25 +1,38 @@
 {% extends "layout.html" %}
 {% block title %}Course Catalog{% endblock %}
 {% block body %}
-<h1>Course Catalog</h1>
-
-{% if session['user_id'] %}
-  <a href="{{ url_for('add_course') }}">Add Course</a>
-{% endif %}
+<div class="jumbotron">
+  <h1>Welcome</h1>
+  <p>Course Catalog is a simple application that lets you add courses
+    and organize them by school and category. Use the links below to get started
+    or click the links in the navigation above.
+  </p>
+  <p>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('add_course') }}" role="button">
+      Add Course
+    </a>
+    <a class="btn btn-primary btn-lg" href="{{ url_for('view_all_courses') }}" role="button">
+      View Courses
+    </a>
+  </p>
+</div>
 
 {% if courses %}
-<h2>5 Most Recent Courses</h2>
-<ul>
+<div class="page-header">
+  <h2>Recently Added Courses</h2>
+</div>
+<div class="list-group">
   {% for course in courses %}
-  <li>
-    <a href="{{ url_for('view_course', id=course.id) }}">{{ course.name }}</a>
-    <ul>
-      <li>School: <a href="{{ url_for('view_school', id=course.school.id) }}">{{ course.school.name }}</a></li>
-      <li>Category: <a href="{{ url_for('view_category', id=course.category.id) }}">{{ course.category.name }}</a></li>
-    </ul>
-  </li>
+    <a class="list-group-item" href="{{ url_for('view_course', id=course.id) }}">
+      <h4 class="list-group-item-heading">
+        {{ course.name }} <small>{{ course.school.name }}</small>
+      </h4>
+      <p class="list-group-item-text">
+        {{ course.category.name }}
+      </p>
+    </a>
   {% endfor %}
-</ul>
+</div>
 {% else %}
 <p>
   No courses
