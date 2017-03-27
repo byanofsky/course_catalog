@@ -50,19 +50,17 @@
   }(document, 'script', 'facebook-jssdk'));
 
   function sendTokenToServer(accessToken) {
-    console.log('Welcome!  Fetching your information.... ');
+    console.log('Fetching user information.... ');
     FB.api('/me', function(response) {
-      console.log('Successful login for: ' + response.name);
+      console.log('Successful Facebook login for: ' + response.name);
       document.getElementById('status').innerHTML =
         'Thanks for logging in, ' + response.name + '!';
-
-      // window.location.href = "{{ url_for('fbconnect') }}?state={{ STATE }}";
 
       var xhr = new XMLHttpRequest();
       xhr.open('POST', '{{ url_for("fbconnect") }}?state={{ state }}');
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.onload = function() {
-        console.log(xhr.status);
+        console.log('Server side call status: ' + xhr.status);
         if (xhr.status === 200) {
           $('#status').html('Login Successful!<br>' + xhr.responseText + '<br>Redirecting...');
           window.location.href = "{{ url_for('frontpage') }}";
@@ -71,12 +69,16 @@
         }
       };
       xhr.send('access_token=' + accessToken);
+      console.log('Making call to server');
     });
   }
   </script>
 {% endblock %}
-{% block title %}Login{% endblock %}
+{% block title %}Login With Facebook{% endblock %}
 {% block body %}
+<div class="page-header">
+  <h1>Login With Facebook</h1>
+</div>
 
 <fb:login-button scope="public_profile,email" onlogin="checkLoginState();">
 </fb:login-button>
