@@ -1,11 +1,13 @@
 {% extends "layout.html" %}
-{% block title %}Facebook Logout{% endblock %}
+{% block title %}Disconnect Facebook{% endblock %}
 {% block body %}
-<h1>Facebook Logout</h1>
+<div class="page-header">
+  <h1>Disconnect Facebook</h1>
+</div>
 <p>
   Click below to disconnect from Facebook.
 </p>
 <form method="post">
-  <input type="submit" value="Disconnect from Facebook">
+  <button type="submit" class="btn btn-default">Disconnect Facebook</button>
 </form>
 {% endblock %}
