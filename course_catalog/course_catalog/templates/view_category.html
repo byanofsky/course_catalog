@@ -1,23 +1,30 @@
 {% extends "layout.html" %}
 {% block title %}{{ category.name }}{% endblock %}
 {% block body %}
-<h1>{{ category.name }}</h1>
+<div class="page-header">
+  <h1>{{ category.name }}</h1>
+</div>
 
 {% if session['user_id'] == category.user_id %}
-  <a href="{{ url_for('edit_category', id=category.id) }}">Edit</a>
-  <a href="{{ url_for('delete_category', id=category.id) }}">Delete</a>
+  <p>
+    <a class="btn btn-default btn-sm" href="{{ url_for('edit_category', id=category.id) }}">Edit</a>
+    <a class="btn btn-danger btn-sm" href="{{ url_for('delete_category', id=category.id) }}">Delete</a>
+  </p>
 {% endif %}
 
 {% if category.courses %}
-  <h2>Courses in this Category:</h2>
-  <ul>
-
+  <div class="list-group">
     {% for course in category.courses %}
-      <li>
-        <a href="{{ url_for('view_course', id=course.id) }}">{{ course.name }}</a>
-      </li>
+      <a class="list-group-item" href="{{ url_for('view_course', id=course.id) }}">
+        <h4 class="list-group-item-heading">
+          {{ course.name }} <small>from {{ course.school.name }}</small>
+        </h4>
+        <p class="list-group-item-text">
+          {{ course.category.name }}
+        </p>
+      </a>
     {% endfor %}
-  </ul>
+  </div>
 {% else %}
   <p>
     No courses in this category.
