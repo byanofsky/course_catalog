@@ -1,11 +1,13 @@
 {% extends "layout.html" %}
-{% block title %}Google Logout{% endblock %}
+{% block title %}Disconnect Google{% endblock %}
 {% block body %}
-<h1>Google Logout</h1>
+<div class="page-header">
+  <h1>Disconnect Google</h1>
+</div>
 <p>
   Click below to disconnect from Google.
 </p>
 <form method="post">
-  <input type="submit" value="Disconnect from Google">
+  <button type="submit" class="btn btn-default">Disconnect Google</button>
 </form>
 {% endblock %}
