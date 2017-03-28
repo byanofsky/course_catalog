@@ -1,55 +1,74 @@
 {% extends "layout.html" %}
 {% block title %}Register{% endblock %}
 {% block body %}
-<h1>Register</h1>
+<div class="page-header">
+  <h1>Register</h1>
+</div>
 <form method="post">
-  <label>
-    Email
-    <input type="text" name="email" value="{{ fields.email }}">
-    {% if errors and errors.email %}
-      <div class="error">
+  <div class="form-group{% if errors and (errors.email or errors.user_exists) %} has-error{% endif %}">
+    <label class="control-label" for="email">Email</label>
+    <input class="form-control"
+           id="email"
+           type="text"
+           name="email"
+           value="{{ fields.email }}"
+           aria-describedby="email-help">
+    <span id="email-help" class="help-block">
+      {% if errors and errors.email %}
         Please enter a valid email address.
-      </div>
-    {% endif %}
-    {% if errors and errors.user_exists %}
-      <div class="error">
+      {% elif errors and errors.user_exists %}
         A user already exists with this email address.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <label>
-    Name
-    <input type="text" name="name" value="{{ fields.name }}">
-    {% if errors and errors.name %}
-      <div class="error">
+  <div class="form-group{% if errors and errors.name %} has-error{% endif %}">
+    <label class="control-label" for="name">Name</label>
+    <input class="form-control"
+           id="name"
+           type="text"
+           name="name"
+           value="{{ fields.name }}"
+           aria-describedby="name-help">
+    <span id="name-help" class="help-block">
+      {% if errors and errors.name %}
         Please enter a valid name.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <label>
-    Password
-    <input type="password" name="password" value="">
-    {% if errors and errors.password %}
-      <div class="error">
+  <div class="form-group{% if errors and errors.password %} has-error{% endif %}">
+    <label class="control-label" for="password">Password</label>
+    <input class="form-control"
+           id="password"
+           type="password"
+           name="password"
+           value=""
+           aria-describedby="password-help">
+    <span id="password-help" class="help-block">
+      {% if errors and errors.password %}
         Please enter a valid password, at least 3 characters long.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <label>
-    Verify Password
-    <input type="password" name="verify_password" value="">
-    {% if errors and errors.verify_password %}
-      <div class="error">
+  <div class="form-group{% if errors and errors.verify_password %} has-error{% endif %}">
+    <label class="control-label" for="verify_password">Verify Password</label>
+    <input class="form-control"
+           id="verify_passord"
+           type="password"
+           name="verify_password"
+           value=""
+           aria-describedby="verify-password-help">
+    <span id="verify-password-help" class="help-block">
+      {% if errors and errors.verify_password %}
         Please re-enter your password correctly.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
   <input type="hidden" name="state" value="{{state}}">
 
-  <input type="submit" value="Submit">
+  <button type="submit" class="btn btn-default">Submit</button>
 </form>
 {% endblock %}
