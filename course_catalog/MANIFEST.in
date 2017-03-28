@@ -1,3 +1,0 @@
-graft course_catalog/templates
-graft course_catalog/static
-include course_catalog/schema.sql
