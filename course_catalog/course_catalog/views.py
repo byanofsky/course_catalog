@@ -2,7 +2,7 @@ import random
 import string
 from functools import wraps
 
-from flask import render_template, session, request, make_response, flash, \
+from flask import render_template, session, request, make_response, flash,\
                   redirect, url_for, abort, json, jsonify
 from flask_bcrypt import Bcrypt
 import requests
