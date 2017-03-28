@@ -1,21 +1,24 @@
 {% extends "layout.html" %}
 {% block title %}Categories{% endblock %}
 {% block body %}
-<h1>Categories</h1>
-
-{% if session['user_id'] %}
-  <a href="{{ url_for('add_category') }}">Add Category</a>
-{% endif %}
+<div class="page-header">
+  <h1>Categories</h1>
+  {% if session['user_id'] %}
+    <p>
+      <a class="btn btn-default" href="{{ url_for('add_category') }}">Add Category</a>
+    </p>
+  {% endif %}
+</div>
 
 {% if categories %}
-<ul>
+<div class="list-group">
   {% for category in categories %}
-  <li>
-    <a href="{{ url_for('view_category', id=category.id) }}">{{ category.name }}</a>
-    {{ category.courses|length }}
-  </li>
+    <a class="list-group-item" href="{{ url_for('view_category', id=category.id) }}">
+      {{ category.name }}
+      <span class="badge">{{ category.courses|length }}</span>
+    </a>
   {% endfor %}
-</ul>
+</div>
 {% else %}
 <p>
   No categories

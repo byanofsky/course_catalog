@@ -1,24 +1,28 @@
 {% extends "layout.html" %}
 {% block title %}Courses{% endblock %}
 {% block body %}
-<h1>Courses</h1>
-
-{% if session['user_id'] %}
-  <a href="{{ url_for('add_course') }}">Add Course</a>
-{% endif %}
+<div class="page-header">
+  <h1>Courses</h1>
+  {% if session['user_id'] %}
+    <p>
+      <a class="btn btn-default" href="{{ url_for('add_course') }}">Add Course</a>
+    </p>
+  {% endif %}
+</div>
 
 {% if courses %}
-<ul>
+<div class="list-group">
   {% for course in courses %}
-  <li>
-    <a href="{{ url_for('view_course', id=course.id) }}">{{ course.name }}</a>
-    <ul>
-      <li>School: <a href="{{ url_for('view_school', id=course.school.id) }}">{{ course.school.name }}</a></li>
-      <li>Category: <a href="{{ url_for('view_category', id=course.category.id) }}">{{ course.category.name }}</a></li>
-    </ul>
-  </li>
+    <a class="list-group-item" href="{{ url_for('view_course', id=course.id) }}">
+      <h4 class="list-group-item-heading">
+        {{ course.name }} <small>from {{ course.school.name }}</small>
+      </h4>
+      <p class="list-group-item-text">
+        {{ course.category.name }}
+      </p>
+    </a>
   {% endfor %}
-</ul>
+</div>
 {% else %}
 <p>
   No courses

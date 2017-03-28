@@ -1,21 +1,24 @@
 {% extends "layout.html" %}
 {% block title %}Schools{% endblock %}
 {% block body %}
-<h1>Schools</h1>
-
-{% if session['user_id'] %}
-  <a href="{{ url_for('add_school') }}">Add School</a>
-{% endif %}
+<div class="page-header">
+  <h1>Schools</h1>
+  {% if session['user_id'] %}
+    <p>
+      <a class="btn btn-default" href="{{ url_for('add_school') }}">Add School</a>
+    </p>
+  {% endif %}
+</div>
 
 {% if schools %}
-<ul>
+<div class="list-group">
   {% for school in schools %}
-  <li>
-    <a href="{{ url_for('view_school', id=school.id) }}">{{ school.name }}</a>
-    {{ school.courses|length }}
-  </li>
+    <a class="list-group-item" href="{{ url_for('view_school', id=school.id) }}">
+      {{ school.name }}
+      <span class="badge">{{ school.courses|length }}</span>
+    </a>
   {% endfor %}
-</ul>
+</div>
 {% else %}
 <p>
   No schools
