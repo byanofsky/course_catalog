@@ -1,7 +1,12 @@
 {% extends "layout.html" %}
-{% block title %}Google Login{% endblock %}
+{% block title %}Login With Google{% endblock %}
 {% block body %}
-<a href="https://accounts.google.com/o/oauth2/v2/auth?client_id={{ config.GOOGLE_CLIENT_ID }}&amp;response_type=code&amp;scope=openid%20email%20profile&amp;redirect_uri=http://localhost:5000/googleconnect&state={{ state }}">
+<div class="page-header">
+  <h1>Login With Google</h1>
+</div>
+
+<a class="btn btn-default"
+   href="https://accounts.google.com/o/oauth2/v2/auth?client_id={{ config.GOOGLE_CLIENT_ID }}&amp;response_type=code&amp;scope=openid%20email%20profile&amp;redirect_uri=http://localhost:5000/googleconnect&state={{ state }}">
   Login with Google
 </a>
 {% endblock %}
