@@ -1,50 +1,59 @@
 {% extends "layout.html" %}
 {% block title %}Login{% endblock %}
 {% block body %}
-<h1>Login</h1>
+<div class="page-header">
+  <h1>Login</h1>
+</div>
 <p>
   Enter login details below, or login through one of your existing accounts.
 </p>
 <form method="post">
-  <label>
-    Email
-    <input type="text" name="email" value="{{ fields.email }}">
-    {% if errors and errors.email %}
-      <div class="error">
+  <div class="form-group{% if errors and (errors.email or errors.user_not_exist) %} has-error{% endif %}">
+    <label class="control-label" for="email">Email</label>
+    <input class="form-control"
+           id="email"
+           type="text"
+           name="email"
+           value="{{ fields.email }}"
+           aria-describedby="email-help">
+    <span id="email-help" class="help-block">
+      {% if errors and errors.email %}
         Please enter a valid email address.
-      </div>
-    {% endif %}
-    {% if errors and errors.user_not_exist %}
-      <div class="error">
+      {% elif errors and errors.user_not_exist %}
         There is no user with this email address.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <label>
-    Password
-    <input type="password" name="password" value="">
-    {% if errors and errors.password %}
-      <div class="error">
+  <div class="form-group{% if errors and errors.password %} has-error{% endif %}">
+    <label class="control-label" for="password">Password</label>
+    <input class="form-control"
+           id="password"
+           type="password"
+           name="password"
+           value=""
+           aria-describedby="password-help">
+    <span id="password-help" class="help-block">
+      {% if errors and errors.password %}
         This password is incorrect. Please try again.
-      </div>
-    {% endif %}
-  </label>
+      {% endif %}
+    </span>
+  </div>
 
-  <input type="submit" value="Submit">
+  <button type="submit" class="btn btn-default">Submit</button>
 </form>
 
 <p>
   Don't have an account?
   <a href="{{ url_for('register') }}">
-    Click here to create an account
-  </a>,<br>
+    Click Here to Register
+  </a><br>
   or log in through an option below.
 </p>
 
 <h2>Login through an existing account</h2>
-<a href="{{ url_for('fblogin') }}">Facebook</a>
-<a href="{{ url_for('googlelogin') }}">Google</a>
-<a href="{{ url_for('githublogin') }}">GitHub</a>
+<a class="btn btn-default" href="{{ url_for('fblogin') }}">Facebook</a>
+<a class="btn btn-default" href="{{ url_for('googlelogin') }}">Google</a>
+<a class="btn btn-default" href="{{ url_for('githublogin') }}">GitHub</a>
 
 {% endblock %}
