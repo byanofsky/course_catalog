@@ -1,5 +1,10 @@
 apt-get -qqy update
 apt-get -qqy install apache2
-apt-get install libapache2-mod-wsgi
-a2enmod wsgi
-apt-get -qqy install python-pip
+apt-get -qqy install libapache2-mod-wsgi
+apt-get -y install python-pip
+apt-get -y install postgresql
+#
+sudo -u postgres createuser --no-createdb --encrypted course_catalog
+sudo -u postgres createdb course_catalog
+
+pip install virtualenv
