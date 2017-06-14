@@ -10,6 +10,4 @@ GOOGLE_CLIENT_SECRET = 'Google Client Secret'
 GITHUB_CLIENT_ID = 'GitHub Client ID'
 GITHUB_CLIENT_SECRET = 'GitHub Client Secret'
 # Database URI in format: dialect+driver://username:password@host:port/database
-DB_PASSWORD = '12345'
-SQLALCHEMY_DATABASE_URI = 'postgresql://course_catalog:'\
-                          '{}@127.0.0.1/course_catalog'.format(DB_PASSWORD)
+SQLALCHEMY_DATABASE_URI = 'postgresql://course_catalog@localhost/course_catalog'
