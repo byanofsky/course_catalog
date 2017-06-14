@@ -6,7 +6,6 @@ setup(
     include_package_data=True,
     install_requires=[
         'flask',
-        'SQLAlchemy',
         'flask_sqlalchemy',
         'flask_bcrypt',
         'requests'
