@@ -4,3 +4,4 @@
 venv
 *.egg-info
 course_catalog/instance/*
+ubuntu-xenial*.log
