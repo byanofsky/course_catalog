@@ -3,5 +3,5 @@
 .vagrant
 venv
 *.egg-info
-course_catalog/instance/*
+course_catalog/course_catalog/instance/*
 ubuntu-xenial*.log
