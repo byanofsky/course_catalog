@@ -9,4 +9,5 @@ GOOGLE_CLIENT_ID = 'Google Client Id'
 GOOGLE_CLIENT_SECRET = 'Google Client Secret'
 GITHUB_CLIENT_ID = 'GitHub Client ID'
 GITHUB_CLIENT_SECRET = 'GitHub Client Secret'
-SQLALCHEMY_DATABASE_URI = 'sqlite:///../instance/course_catalog.db'
+# Database URI in format: dialect+driver://username:password@host:port/database
+SQLALCHEMY_DATABASE_URI = 'postgresql://course_catalog:12345@127.0.0.1/course_catalog'
