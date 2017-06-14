@@ -8,6 +8,7 @@ setup(
         'flask',
         'flask_sqlalchemy',
         'flask_bcrypt',
-        'requests'
+        'requests',
+        'psycopg2'
     ],
 )
