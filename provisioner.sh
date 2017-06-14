@@ -8,3 +8,6 @@ sudo -u postgres createuser --no-createdb --encrypted course_catalog
 sudo -u postgres createdb course_catalog
 
 pip install virtualenv
+cd /var/www/html/course_catalog
+virtualenv venv
+source venv/bin/activate 
