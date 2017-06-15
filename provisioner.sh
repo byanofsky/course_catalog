@@ -14,3 +14,7 @@ pip install virtualenv
 cd /var/www/html/course_catalog
 virtualenv venv
 source venv/bin/activate
+
+a2dissite 000-default.conf
+a2ensite course_catalog.conf
+service apache2 reload

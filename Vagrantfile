@@ -67,5 +67,6 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
+  config.vm.provision "file", source: "./files-for-server/course_catalog.conf", destination: "/etc/apache2/sites-available/course_catalog.conf"
   config.vm.provision "shell", path: "provisioner.sh"
 end
