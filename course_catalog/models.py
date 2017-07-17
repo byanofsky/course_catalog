@@ -1,4 +1,8 @@
-from course_catalog import db
+from course_catalog import app
+from flask_sqlalchemy import SQLAlchemy
+
+# Create database instance
+db = SQLAlchemy(app)
 
 # Rename base database model to Base
 Base = db.Model
