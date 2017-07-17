@@ -11,7 +11,7 @@ class CourseCatalogTestCase(unittest.TestCase):
         course_catalog.app.config['TESTING'] = True
         self.app = course_catalog.app.test_client()
         with course_catalog.app.app_context():
-            course_catalog.course_catalog.init_db()
+            course_catalog.init_db()
 
     def tearDown(self):
         os.unlink(os.path.abspath(self.test_db_path))
