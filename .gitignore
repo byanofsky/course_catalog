@@ -3,4 +3,4 @@
 .vagrant
 venv
 *.egg-info
-course_catalog/instance/*
+instance/*
