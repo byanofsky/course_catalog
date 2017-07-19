@@ -6,7 +6,7 @@
 </div>
 
 <a class="btn btn-default"
-   href="https://accounts.google.com/o/oauth2/v2/auth?client_id={{ config.GOOGLE_CLIENT_ID }}&amp;response_type=code&amp;scope=openid%20email%20profile&amp;redirect_uri=http://localhost:5000/googleconnect&state={{ state }}">
+   href="https://accounts.google.com/o/oauth2/v2/auth?client_id={{ config.GOOGLE_CLIENT_ID }}&amp;response_type=code&amp;scope=openid%20email%20profile&amp;redirect_uri={{ request.url_root }}googleconnect&state={{ state }}">
   Login with Google
 </a>
 {% endblock %}
