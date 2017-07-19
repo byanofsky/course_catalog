@@ -133,11 +133,11 @@ class User(Base):
         """
         # TODO: repetetive code. Get query, then one or none
         if provider == 'facebook':
-            return cls.query.filter_by(facebook_id=id).one_or_none()
+            return cls.query.filter_by(facebook_id=str(id)).one_or_none()
         elif provider == 'google':
-            return cls.query.filter_by(google_id=id).one_or_none()
+            return cls.query.filter_by(google_id=str(id)).one_or_none()
         elif provider == 'github':
-            return cls.query.filter_by(github_id=id).one_or_none()
+            return cls.query.filter_by(github_id=str(id)).one_or_none()
         else:
             return None
 
