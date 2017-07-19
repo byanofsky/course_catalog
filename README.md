@@ -1,6 +1,6 @@
 # Course Catalog
 
-A simple course catalog.
+A simple course catalog. Working example here: https://bay-course-catalog.herokuapp.com
 
 Users can add courses and organize them by school and category.
 
