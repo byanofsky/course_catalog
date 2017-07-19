@@ -1,8 +1,6 @@
 # Add a Secret Key, and info from Facebook, Google, and GitHub.
 # Social Logins won't work without your IDs and Secrets added.
 SECRET_KEY = 'development key'
-# TODO: why is debug not working here?
-DEBUG = False
 FB_APP_ID = 'Facebook App ID'
 FB_APP_SECRET = 'Facebook App Secret'
 GOOGLE_CLIENT_ID = 'Google Client Id'
